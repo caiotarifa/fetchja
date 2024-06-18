@@ -1,11 +1,19 @@
 {
   "name": "fetchja",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
+    "build": "esbuild src/index.js --bundle --format=esm --packages=external --minify --sourcemap --outfile=dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Caio Tarifa <caio@yahoo.com>",
   "license": "ISC",
-  "description": ""
+  "description": "The ultimate JavaScript library designed to make your JSON:API interactions seamless and intuitive.",
+  "dependencies": {
+    "pluralize": "^8.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.21.5"
+  }
 }

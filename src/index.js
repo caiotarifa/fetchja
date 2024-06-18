@@ -1,3 +1,35 @@
+import pluralize from 'pluralize'
+
+import { deserialize } from './utils/deserialize.js'
+import { serialize } from './utils/serialize.js'
+
+import { errorParser } from './utils/error-parser.js'
+import { queryFormatter } from './utils/query-formatter.js'
+import { splitModel } from './utils/split-model.js'
+
+import { camelCase } from './utils/camel-case.js'
+import { kebabCase } from './utils/kebab-case.js'
+import { snakeCase } from './utils/snake-case.js'
+
+const jsonType = 'application/vnd.api+json'
+
+/**
+ * Options for Fetchja.
+ * 
+ * @typedef {Object} FetchjaOptions
+ * @property {string} baseURL The base URL for all requests.
+ * @property {Object} headers The headers to include in all requests.
+ * @property {Function} queryFormatter A function to format query parameters.
+ * @property {string} resourceCase The case to use for resource names.
+ * @property {boolean} pluralize Pluralize resource names.
+ */
+
+/**
+ * Fetchja is a simple wrapper around the Fetch API.
+ * 
+ * @class Fetchja
+ * @param {FetchjaOptions} [options] Options for Fetchja.
+ */
 export default class Fetchja {
   constructor (options = {
     headers: {}
@@ -5,7 +37,40 @@ export default class Fetchja {
     this.baseURL = options.baseURL
 
     // Headers
-    this.headers = options.headers
+    this.headers = {
+      Accept: jsonType,
+      'Content-Type': jsonType,
+      ...options.headers
+    }
+
+    // Query
+    this.queryFormatter = typeof options.queryFormatter === 'function'
+      ? options.queryFormatter
+      : object => queryFormatter(object)
+
+    // Camel Case Types
+    this.camelCaseTypes = options.camelCaseTypes === false
+      ? string => string
+      : camelCase
+
+    // Resource Case
+    const cases = {
+      camel: camelCase,
+      kebab: kebabCase,
+      snake: snakeCase,
+
+      default: string => string
+    }
+
+    this.resourceCase = cases[options.resourceCase] || cases.default
+    
+    // Pluralise
+    this.pluralize = options.pluralize === false
+      ? string => string
+      : pluralize
+    
+    // Interceptors
+    this.onResponseError = error => error
 
     // Alias
     this.fetch = this.get
@@ -14,15 +79,22 @@ export default class Fetchja {
     this.remove = this.delete
   }
 
-  async request (method, endpoint, options = {
-    headers: {},
-    params: {}
+  #splitModel (model) {
+    return splitModel(model, {
+      resourceCase: this.resourceCase,
+      pluralize: this.pluralize
+    })
+  }
+
+  async request (options = {
+    method: 'GET',
+    headers: {}
   }) {
-    const url = new URL(endpoint, this.baseURL || options.baseURL)
+    const url = new URL(options.url, this.baseURL || options.baseURL)
 
     // Params
-    for (const key in options.params) {
-      url.searchParams.append(key, options.params[key])
+    if (options.params) {
+      url.search = this.queryFormatter(options.params)
     }
 
     // Headers
@@ -31,44 +103,112 @@ export default class Fetchja {
       ...options.headers
     })
 
+    // Body
+    if (options.body) {
+      options.body = serialize(options.type, options.body, {
+        camelCaseTypes: this.camelCaseTypes,
+        pluralTypes: this.pluralize
+      })
+    }
+
+    // Fetch
     try {
       const response = await fetch(url, {
-        method,
+        method: options.method,
+        body: options.body,
         headers
       })
 
       if (!response.ok) {
+        this.onResponseError(response)
         throw new Error(response.statusText)
       }
 
-      const data = await response.json()
+      // Response Headers
+      const responseHeaders = {}
 
+      for (const [key, value] of response.headers.entries()) {
+        responseHeaders[key] = value
+      }
+
+      const contentType = responseHeaders['content-type']
+
+      // Response Data
+      const data = contentType && contentType.includes(jsonType)
+        ? await response.json()
+        : {}
+
+      // Return
       return {
-        data,
+        ...deserialize(data),
 
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers
+        headers: responseHeaders
       }
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
 
-  get (endpoint, params, options = {}) {
-    return this.request('get', endpoint, { params, ...options })
+  get (model, options = { method: 'GET' }) {
+    try {
+      options.url = model.split('/')
+        .map(part => this.resourceCase(part))
+        .filter(Boolean)
+        .join('/')
+
+      return this.request(options)
+    } catch (error) {
+      throw errorParser(error)
+    }
   }
 
-  patch (endpoint, body, options = {}) {
-    return this.request('patch', endpoint, { body, ...options })
+  patch (model, body, options = { method: 'PATCH' }) {
+    try {
+      const [type, url] = this.#splitModel(model)
+
+      return this.request({
+        url: body?.id ? `${url}/${body.id}` : url,
+        body,
+        type,
+
+        ...options
+      })
+    } catch (error) {
+      throw errorParser(error)
+    }
   }
 
-  post (endpoint, body, options = {}) {
-    return this.request('post', endpoint, { body, ...options })
+  post (model, body, options = { method: 'POST' }) {
+    try {
+      const [type, url] = this.#splitModel(model)
+
+      return this.request({
+        url,
+        body,
+        type,
+
+        ...options
+      })
+    } catch (error) {
+      throw errorParser(error)
+    }
   }
 
-  delete (endpoint, options = {}) {
-    return this.request('delete', endpoint, options)
+  delete (model, id, options = { method: 'DELETE' }) {
+    try {
+      const [type, url] = this.#splitModel(model)
+
+      return this.request({
+        url: `${url}/${id}`,
+        body: { id },
+        type,
+
+        ...options
+      })
+    } catch (error) {
+      throw errorParser(error)
+    }
   }
 }
