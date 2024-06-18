@@ -15,5 +15,13 @@
   },
   "devDependencies": {
     "esbuild": "0.21.5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caiotarifa/fetchja.git"
+  },
+  "bugs": {
+    "url": "https://github.com/caiotarifa/fetchja/issues"
+  },
+  "homepage": "https://github.com/caiotarifa/fetchja#readme"
 }

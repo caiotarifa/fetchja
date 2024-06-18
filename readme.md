@@ -1,4 +1,4 @@
-# Fetchja: Simplify Your JSON:API Interactions
+# Fetchja
 
 Welcome to **Fetchja**, the ultimate JavaScript library designed to make your JSON:API interactions seamless and intuitive. Inspired by the renowned [Kitsu](https://github.com/wopian/kitsu) library, Fetchja leverages the native Fetch API, ensuring a lightweight and efficient experience.
 
