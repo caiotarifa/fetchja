@@ -1,6 +1,6 @@
 {
   "name": "fetchja",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "author": "Caio Tarifa <caio@yahoo.com>",
   "license": "ISC",
-  "description": "The ultimate JavaScript library designed to make your JSON:API interactions seamless and intuitive.",
+  "description": "A super simple, modern, and lightweight library for dealing with JSON:API (Kitsu-like, but using Fetch API instead of Axios).",
   "dependencies": {
     "pluralize": "^8.0.0"
   },

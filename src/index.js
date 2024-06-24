@@ -97,12 +97,6 @@ export default class Fetchja {
       url.search = this.queryFormatter(options.params)
     }
 
-    // Headers
-    const headers = new Headers({
-      ...this.headers,
-      ...options.headers
-    })
-
     // Body
     if (options.body) {
       options.body = serialize(options.type, options.body, {
@@ -111,16 +105,33 @@ export default class Fetchja {
       })
     }
 
-    // Fetch
-    try {
-      const response = await fetch(url, {
+    // Request
+    const makeRequest = () => {
+      // Headers
+      const headers = new Headers({
+        ...this.headers,
+        ...options.headers
+      })
+
+      // Fetch
+      return fetch(url, {
         method: options.method,
         body: options.body,
         headers
       })
+    }
+
+    try {
+      let response = await makeRequest()
 
       if (!response.ok) {
-        this.onResponseError(response)
+        response.replayRequest = makeRequest
+        const replayedResponse = await this.onResponseError(response)
+
+        if (replayedResponse instanceof Response) {
+          response = replayedResponse
+        }
+      } else if (!response.ok) {
         throw new Error(response.statusText)
       }
 
