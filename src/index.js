@@ -90,7 +90,12 @@ export default class Fetchja {
     method: 'GET',
     headers: {}
   }) {
-    const url = new URL(options.url, this.baseURL || options.baseURL)
+    const baseURL = this.baseURL || options.baseURL
+
+    const url = new URL(
+      options.url.startsWith('/') ? options.url.slice(1) : options.url,
+      baseURL.endsWith('/') ? baseURL : baseURL + '/'
+    )
 
     // Params
     if (options.params) {
