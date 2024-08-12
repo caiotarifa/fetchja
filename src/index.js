@@ -156,7 +156,7 @@ export default class Fetchja {
 
       // Return
       return {
-        ...deserialize(data),
+        ...(data.errors ? data : deserialize(data)),
 
         status: response.status,
         statusText: response.statusText,
