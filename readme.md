@@ -21,7 +21,7 @@ $ npm install fetchja pluralize
 Here's a quick example to get you up and running with Fetchja:
 
 ```javascript
-import { Fetchja } from 'fetchja'
+import Fetchja from 'fetchja'
 
 const api = new Fetchja({
   baseURL: 'https://api.example.com'
