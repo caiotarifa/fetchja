@@ -72,6 +72,9 @@ export default class Fetchja {
     // Interceptors
     this.onResponseError = error => error
 
+    // Custom Fetch
+    this.fetchFunction = options.fetch || fetch
+
     // Alias
     this.fetch = this.get
     this.update = this.patch
@@ -91,6 +94,8 @@ export default class Fetchja {
     headers: {}
   }) {
     const baseURL = this.baseURL || options.baseURL
+
+    const fetchFunction = options.fetch || this.fetchFunction
 
     const url = new URL(
       options.url.startsWith('/') ? options.url.slice(1) : options.url,
@@ -119,7 +124,7 @@ export default class Fetchja {
       })
 
       // Fetch
-      return fetch(url, {
+      return fetchFunction(url, {
         method: options.method,
         body: options.body,
         headers
