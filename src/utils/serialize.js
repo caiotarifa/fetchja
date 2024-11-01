@@ -6,8 +6,10 @@ function serializeNode (node, key, data) {
       data.relationships = {}
     }
 
+    const serializeEntity = (entity) => (entity.id ? { id: entity.id, type: entity.type || key } : entity)
+
     data.relationships[key] = {
-      data: node.id ? { id: node.id, type: node.type || key } : node,
+      data: Array.isArray(node) ? node.map(serializeEntity) : serializeEntity(node),
       links: node.links,
       meta: node.meta
     }
