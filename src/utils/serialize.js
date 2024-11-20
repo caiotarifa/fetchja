@@ -6,7 +6,14 @@ function serializeNode (node, key, data) {
       data.relationships = {}
     }
 
-    const serializeEntity = (entity) => (entity.id ? { id: entity.id, type: entity.type || key } : entity)
+    const serializeEntity = (entity) => (
+      entity.id
+        ? { id: entity.id, type: entity.type || key }
+        : ( Object.keys(entity).length
+           ? entity // object without ID or type will surely not pass validation
+           : null // encode as null to signal relationship removal
+         )
+    )
 
     data.relationships[key] = {
       data: Array.isArray(node) ? node.map(serializeEntity) : serializeEntity(node),
