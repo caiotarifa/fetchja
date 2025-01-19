@@ -18,6 +18,7 @@ const jsonType = 'application/vnd.api+json'
  * 
  * @typedef {Object} FetchjaOptions
  * @property {string} baseURL The base URL for all requests.
+ * @property {Function} fetchFunction A custom fetch function to use in request.
  * @property {Object} headers The headers to include in all requests.
  * @property {Function} queryFormatter A function to format query parameters.
  * @property {string} resourceCase The case to use for resource names.
@@ -42,6 +43,9 @@ export default class Fetchja {
       'Content-Type': jsonType,
       ...options.headers
     }
+
+    // Fetch Function
+    this.fetchFunction = options.fetchFunction
 
     // Query
     this.queryFormatter = typeof options.queryFormatter === 'function'
@@ -68,7 +72,7 @@ export default class Fetchja {
     this.pluralize = options.pluralize === false
       ? string => string
       : pluralize
-    
+
     // Interceptors
     this.onResponseError = error => error
 
@@ -119,11 +123,17 @@ export default class Fetchja {
       })
 
       // Fetch
-      return fetch(url, {
+      const fetchOptions = {
         method: options.method,
         body: options.body,
         headers
-      })
+      }
+
+      if (typeof this.fetchFunction === 'function') {
+        return this.fetchFunction(url, fetchOptions)
+      }
+
+      return fetch(url, fetchOptions)
     }
 
     try {
@@ -131,13 +141,16 @@ export default class Fetchja {
 
       if (!response.ok) {
         response.replayRequest = makeRequest
+
         const replayedResponse = await this.onResponseError(response)
 
         if (replayedResponse instanceof Response) {
           response = replayedResponse
         }
-      } else if (!response.ok) {
-        throw new Error(response.statusText)
+
+        if (!response.ok) {
+          throw new Error(response.statusText)
+        }
       }
 
       // Response Headers

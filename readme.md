@@ -34,3 +34,12 @@ try {
   console.error(error)
 }
 ```
+
+### Using a custom fetch function.
+
+```javascript
+const api = new Fetchja({
+  baseURL: 'https://api.example.com',
+  fetchFunction: (url, options) => myCustomFetch(url.href, options)
+})
+```

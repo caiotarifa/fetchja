@@ -10,8 +10,8 @@ export function deattribute (data) {
   }
 
   const output = {
-    id: data.id,
-    type: data.type
+    type: data.type,
+    id: data.id
   }
 
   for (const key in data.attributes) {

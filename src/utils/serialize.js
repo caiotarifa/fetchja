@@ -1,53 +1,97 @@
 import { errorParser } from './error-parser.js'
 
-function serializeNode (node, key, data) {
-  if (typeof node === 'object' && node !== null) {
-    if (!data.relationships) {
-      data.relationships = {}
-    }
-
-    data.relationships[key] = {
-      data: node.id ? { id: node.id, type: node.type || key } : node,
-      links: node.links,
-      meta: node.meta
-    }
-  } else {
-    if (!data.attributes) {
-      data.attributes = {}
-    }
-
-    data.attributes[key] = node
-  }
-
-  return data
+/**
+ * Checks if a value is an object.
+ *
+ * @param {*} object The object to check.
+ * @returns {boolean} Whether the value is an object.
+ */
+function hasObject (object) {
+  return typeof object === 'object' && object !== null
 }
 
-export function serialize (type, data, options = {
+/**
+ * Serialises a JSON-API request.
+ * 
+ * @param {string} type The entity name.
+ * @param {Object} request The request to serialise.
+ * @param {Object} options The serialisation options.
+ * @returns {string} The JSON serialised request.
+ */
+export function serialize (type, request, options = {
   camelCaseTypes: string => string,
   pluralTypes: string => string
 }) {
-  try {
-    if (data === null || (Array.isArray(data) && !data.length)) {
-      return { data }
+  const included = []
+
+  function include (node, subtype) {
+    if (!hasObject(node)) {
+      return
     }
 
-    const output = {
-      type: options.pluralTypes(options.camelCaseTypes(type))
+    if (!node.id) {
+      throw new Error('All included resources must have an ID.')
     }
 
-    if (data.id) {
-      output.id = String(data.id)
+    if (!included.find(item => item.id === node.id)) {
+      included.push(extractData(node, subtype))
+    }
+  }
+
+  function extractData (node, subtype) {
+    const data = {
+      type: options.pluralTypes(options.camelCaseTypes(subtype))
     }
 
-    for (const key in data) {
-      if (['id', 'type'].includes(key)) {
+    for (const key in node) {
+      if (key === 'type') {
         continue
       }
 
-      serializeNode(data[key], key, output)
+      if (key === 'id') {
+        data.id = String(node.id)
+        continue
+      }
+      
+      const value = node[key]
+
+      // Is this a relationship?
+      if (typeof value === 'object') {
+        data.relationships = data.relationships || {}
+
+        // One-To-Many / Many-To-Many
+        if (Array.isArray(value)) {
+          data.relationships[key] = {
+            data: value.map(item => {
+              include(item, key)
+              return { type: item.type || key, id: item.id }
+            })
+          }
+
+          continue
+        }
+
+        // One-To-One
+        data.relationships[key] = {
+          data: { type: value.type || key, id: value.id }
+        }
+
+        include(value, key)
+
+        continue
+      }
+
+      // Is this an attribute?
+      data.attributes = data.attributes || {}
+      data.attributes[key] = node[key]
     }
 
-    return  JSON.stringify({ data: output })
+    return data
+  }
+
+  try {
+    const data = extractData(request, type)
+    return JSON.stringify({ data, included })
   } catch (error) {
     errorParser(error)
   }

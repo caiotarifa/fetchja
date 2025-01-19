@@ -6,7 +6,7 @@
  */
 export function snakeCase (input) {
   return input
-  .replace(/([a-z])([A-Z])/g, '$1_$2')
-  .replace(/-/g, '_')
-  .toLowerCase()
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/-/g, '_')
+    .toLowerCase()
 }
