@@ -1,20 +1,40 @@
 {
   "name": "fetchja",
-  "version": "1.4.0",
-  "main": "dist/index.js",
+  "version": "2.0.0",
   "type": "module",
-  "scripts": {
-    "build": "esbuild src/index.js --bundle --format=esm --packages=external --minify --sourcemap --outfile=dist/index.js",
-    "test": "node --test tests/*"
-  },
+  "description": "A super simple, modern, lightweight, zero-dependency JSON:API client built on the Fetch API.",
   "author": "Caio Tarifa <caio@yahoo.com>",
   "license": "ISC",
-  "description": "A super simple, modern, and lightweight library for dealing with JSON:API (Kitsu-like, but using Fetch API instead of Axios).",
-  "dependencies": {
-    "pluralize": "^8.0.0"
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --minify --sourcemap --clean",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "esbuild": "0.23.0"
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.1",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.60.0"
   },
   "repository": {
     "type": "git",
