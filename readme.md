@@ -153,15 +153,15 @@ console.log(data.author.name) // comes from `included`
 
 ## Query parameters
 
-Pass a `params` object. Fetchja turns nested objects and arrays into JSON:API-style query strings:
+Pass a `params` object. Fetchja serializes it into [JSON:API 1.1](https://jsonapi.org/format/1.1/#query-parameters) query strings: nested objects become bracketed keys, and arrays become comma-separated values (the format the spec defines for `include`, `sort`, `fields[type]`, and list filters).
 
 ```js
 const { data, meta } = await api.get('articles', {
   params: {
     include: ['author', 'comments'],
-    fields: { articles: 'title,body' },
+    fields: { articles: ['title', 'body'] },
     filter: { published: true },
-    sort: '-createdAt',
+    sort: ['-createdAt'],
     page: { number: 1, size: 10 }
   }
 })
@@ -170,26 +170,45 @@ const { data, meta } = await api.get('articles', {
 This becomes:
 
 ```
-/articles?include[]=author&include[]=comments&fields[articles]=title,body&filter[published]=true&sort=-createdAt&page[number]=1&page[size]=10
+/articles?include=author,comments&fields[articles]=title,body&filter[published]=true&sort=-createdAt&page[number]=1&page[size]=10
+```
+
+Strings work too, so you can pass the comma-separated form directly if you prefer — `include: 'author,comments'` and `sort: '-createdAt'` produce the same output.
+
+Filters of any depth are supported. Object values nest with brackets, scalar arrays join with commas, and arrays of objects (e.g. boolean groups) expand into indexed keys:
+
+```js
+await api.get('articles', {
+  params: {
+    filter: {
+      id: [1, 2, 3],            // filter[id]=1,2,3
+      price: { gte: 10, lte: 100 }, // filter[price][gte]=10&filter[price][lte]=100
+      tags: { any: ['news', 'tech'] }, // filter[tags][any]=news,tech
+      or: [{ status: 'active' }, { status: 'pending' }]
+      // filter[or][][status]=active&filter[or][][status]=pending
+    }
+  }
+})
 ```
 
 ## Make your own query formatter
 
-Some servers want a different format. For example, they may want `include=author,comments` (one key, values joined by commas) instead of `include[]=...`. You can pass your own function:
+The default formatter is JSON:API 1.1 compliant. Some servers want a different shape — for example, repeated `include[]=author&include[]=comments` keys instead of one comma-separated value. You can pass your own function:
 
 ```js
 import Fetchja from 'fetchja'
 
-function commaQueryFormatter (params) {
+function bracketQueryFormatter (params) {
   const search = new URLSearchParams()
 
   for (const key in params) {
     const value = params[key]
 
-    search.append(
-      key,
-      Array.isArray(value) ? value.join(',') : String(value)
-    )
+    if (Array.isArray(value)) {
+      for (const item of value) search.append(`${key}[]`, String(item))
+    } else {
+      search.append(key, String(value))
+    }
   }
 
   return search
@@ -197,11 +216,11 @@ function commaQueryFormatter (params) {
 
 const api = new Fetchja({
   baseURL: 'https://api.example.com',
-  queryFormatter: commaQueryFormatter
+  queryFormatter: bracketQueryFormatter
 })
 
 await api.get('articles', { params: { include: ['author', 'comments'] } })
-// -> /articles?include=author,comments
+// -> /articles?include[]=author&include[]=comments
 ```
 
 Your function takes the `params` object and returns a string or a `URLSearchParams`.

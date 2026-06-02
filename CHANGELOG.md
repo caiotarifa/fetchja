@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.1.0 — 2026-06-02
+
+Query serialization is now fully [JSON:API 1.1](https://jsonapi.org/format/1.1/#query-parameters) compliant by default.
+
+### Changes
+
+- **Arrays serialize as comma-separated values** instead of bracketed keys. `include`, `sort`, and `fields[type]` now match the spec (`include=author,comments`), and list filters join the same way (`filter[id]=1,2,3`).
+- **Both forms accepted.** Pass arrays (`include: ['author', 'comments']`) or comma-separated strings (`include: 'author,comments'`) — they produce identical output.
+- **Deep filters supported.** Nested operator objects expand with brackets (`filter[price][gte]=10`), scalar arrays inside them join with commas (`filter[tags][any]=news,tech`), and arrays of objects fall back to indexed keys (`filter[or][][status]=active`).
+- Empty arrays are omitted from the query string.
+
+### Breaking changes
+
+- Array params no longer emit `key[]=...` repeated keys. Servers that relied on the old bracket form can restore it with a custom `queryFormatter` (see the README).
+
 ## 2.0.0 — 2026-06-01
 
 A full rewrite in TypeScript. Same simple API, now typed, smaller, and with no runtime dependencies.

@@ -20,6 +20,20 @@ function isTraversable (value: unknown): value is object {
 }
 
 /**
+ * Check whether a value is an array made up entirely of scalar items.
+ * JSON:API serializes list members such as `include`, `sort`, `fields`
+ * and array filters as a single comma-separated value, so these arrays
+ * are joined rather than expanded into bracketed keys. Arrays that hold
+ * objects (e.g. boolean filter groups) fall back to bracket recursion.
+ *
+ * @param value - The value to check.
+ * @returns `true` when the value is an array of scalars.
+ */
+function isScalarArray (value: unknown): value is unknown[] {
+  return Array.isArray(value) && !value.some(isTraversable)
+}
+
+/**
  * Append an object's entries to a query, recursing into nested objects
  * and arrays using JSON:API-friendly bracket notation.
  *
@@ -42,7 +56,9 @@ function buildQuery (
     const value = (object as Record<string, unknown>)[key]
     const path = prefix ? `${prefix}[${isArray ? '' : key}]` : key
 
-    if (isTraversable(value)) {
+    if (isScalarArray(value) && value.length > 0) {
+      query.append(path, value.map(String).join(','))
+    } else if (isTraversable(value)) {
       buildQuery(query, value, path)
     } else {
       query.append(path, String(value))
