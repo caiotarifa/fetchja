@@ -1,0 +1,19 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import { TYPESCRIPT_CODE } from '../../lib/content'
+---
+
+<DocSection
+  id="typescript"
+  kicker="TypeScript"
+  title="Types ship with the package."
+>
+  <Fragment slot="lede">
+    Fetchja is written in TypeScript and exposes its own definitions. You do
+    not need an extra <InlineCode>@types</InlineCode> package.
+  </Fragment>
+
+  <CodeBlock code={TYPESCRIPT_CODE} filename="typed.ts" />
+</DocSection>

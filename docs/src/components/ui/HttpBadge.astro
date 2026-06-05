@@ -1,0 +1,26 @@
+---
+interface Props {
+  tone: string
+}
+
+const { tone } = Astro.props
+
+const tones = {
+  get: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  post: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+  patch: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  delete: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+}
+
+const toneClass = tones[tone as keyof typeof tones] ?? tones.get
+---
+
+<span
+  class:list={[
+    'mt-1 shrink-0 rounded-md px-2 py-0.5 font-mono text-[9.5px]',
+    'font-bold uppercase tracking-[0.07em]',
+    toneClass
+  ]}
+>
+  <slot />
+</span>

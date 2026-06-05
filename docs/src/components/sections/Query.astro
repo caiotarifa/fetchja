@@ -1,0 +1,124 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import {
+  QUERY_FORMATTER_CODE,
+  QUERY_REQUEST_CODE
+} from '../../lib/content'
+
+const sentUrlParts = [
+  { text: 'api.example.com', class: 'text-text-mut' },
+  { text: '/articles?' },
+  { text: 'include', class: 'text-[var(--tok-prop)]' },
+  { text: '=' },
+  { text: 'author,comments', class: 'text-[var(--tok-str)]' },
+  { text: '&' },
+  { text: 'fields', class: 'text-[var(--tok-prop)]' },
+  { text: '[articles]', class: 'font-semibold text-accent' },
+  { text: '=' },
+  { text: 'title,body', class: 'text-[var(--tok-str)]' },
+  { text: '&' },
+  { text: 'filter', class: 'text-[var(--tok-prop)]' },
+  { text: '[published]', class: 'font-semibold text-accent' },
+  { text: '=' },
+  { text: 'true', class: 'text-[var(--tok-str)]' },
+  { text: '&' },
+  { text: 'page', class: 'text-[var(--tok-prop)]' },
+  { text: '[size]', class: 'font-semibold text-accent' },
+  { text: '=' },
+  { text: '10', class: 'text-[var(--tok-str)]' }
+]
+---
+
+<DocSection
+  id="query"
+  kicker="Query parameters"
+  title="Plain params in. JSON:API query strings out."
+>
+  <Fragment slot="lede">
+    Pass a <InlineCode>params</InlineCode> object. Arrays become
+    comma-separated values, nested objects become bracket keys, and the final
+    URL follows JSON:API 1.1 conventions.
+  </Fragment>
+
+  <div class="mb-2 flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <span
+        class="font-mono text-[11.5px] uppercase tracking-[0.08em]
+          text-text-faint"
+      >
+        you write
+      </span>
+      <CodeBlock code={QUERY_REQUEST_CODE} filename="request.ts" />
+    </div>
+
+    <div class="grid place-items-center text-text-faint/60" aria-hidden="true">
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2.4"
+      >
+        <path d="M12 5v14M6 13l6 6 6-6" />
+      </svg>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span
+        class="font-mono text-[11.5px] uppercase tracking-[0.08em]
+          text-text-faint"
+      >
+        fetchja sends
+      </span>
+      <div
+        class="flex items-center gap-2.5 rounded-xl border border-border-2
+          bg-surface px-4 py-3 font-mono text-[13.5px] leading-relaxed
+          shadow-(--shadow)"
+      >
+        <span
+          class="shrink-0 rounded-md bg-accent px-2 py-0.5 text-[11px]
+            font-bold tracking-wider text-white dark:text-bg"
+        >
+          GET
+        </span>
+        <svg
+          class="size-3.75 shrink-0 text-text-faint"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        >
+          <rect x="5" y="11" width="14" height="9" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+        <span class="break-all text-text">
+          {
+            sentUrlParts.map(part => (
+              <span class={part.class}>{part.text}</span>
+            ))
+          }
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <h3
+    class="mt-12 mb-3.5 flex items-center gap-3 text-[21px] font-semibold
+      tracking-normal text-text"
+  >
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Bring your server's query format
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    Some servers prefer repeated keys like
+    <InlineCode>include[]=author&amp;include[]=comments</InlineCode>. Replace
+    the formatter once at construction and keep call sites unchanged.
+  </p>
+  <CodeBlock code={QUERY_FORMATTER_CODE} filename="query-formatter.ts" />
+</DocSection>

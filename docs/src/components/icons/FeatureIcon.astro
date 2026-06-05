@@ -1,0 +1,66 @@
+---
+interface Props {
+  name: string
+}
+
+const { name } = Astro.props
+---
+
+<svg
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  stroke-width="2"
+  aria-hidden="true"
+>
+  {
+    name === 'bolt' && (
+      <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
+    )
+  }
+  {
+    name === 'code' && (
+      <>
+        <path d="m18 16 4-4-4-4" />
+        <path d="M6 8l-4 4 4 4" />
+        <path d="m14.5 4-5 16" />
+      </>
+    )
+  }
+  {
+    name === 'repeat' && (
+      <>
+        <path d="M21 12a9 9 0 1 1-2.5-6.3L21 8" />
+        <path d="M21 3v5h-5" />
+      </>
+    )
+  }
+  {
+    name === 'shield' && (
+      <>
+        <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z" />
+        <path d="m9 12 2 2 4-4" />
+      </>
+    )
+  }
+  {
+    name === 'sliders' && (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        <path d="m5 5 2 2M17 17l2 2M5 19l2-2M17 7l2-2" />
+      </>
+    )
+  }
+  {
+    name === 'graph' && (
+      <>
+        <circle cx="6" cy="6" r="3" />
+        <circle cx="18" cy="18" r="3" />
+        <path d="M6 9v3a3 3 0 0 0 3 3h6" />
+      </>
+    )
+  }
+</svg>

@@ -1,0 +1,31 @@
+---
+interface Props { text: string }
+const { text } = Astro.props
+---
+
+<button
+  class="copy-btn absolute right-3 top-2.5 z-10 inline-flex h-6
+    items-center gap-1.5 rounded-md border border-border bg-surface/85
+    px-2 font-mono text-[11px] font-medium leading-none text-text-mut
+    opacity-0 shadow-sm backdrop-blur transition duration-150
+    hover:border-accent hover:text-accent group-hover:opacity-100
+    [&.copied]:border-accent [&.copied]:text-accent"
+  data-copy={text}
+  aria-label="Copy code"
+  title="Copy code"
+>
+  <span class="ci shrink-0 [&_svg]:size-3">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  </span>
+  <span class="ct">Copy</span>
+</button>

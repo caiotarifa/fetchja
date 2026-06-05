@@ -1,0 +1,60 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import { ERRORS_CODE, RETRY_CODE } from '../../lib/content'
+---
+
+<DocSection
+  id="errors"
+  kicker="Errors & retries"
+  title="Failures keep the context you need."
+>
+  <Fragment slot="lede">
+    Failed requests throw <InlineCode>FetchjaError</InlineCode>. The error keeps
+    the HTTP status, status text, raw <InlineCode>Response</InlineCode>, and
+    JSON:API <InlineCode>errors</InlineCode> array.
+  </Fragment>
+
+  <CodeBlock code={ERRORS_CODE} filename="errors.ts" />
+
+  <h3
+    class="mt-11 mb-3.5 flex items-center gap-3 text-[21px] font-semibold
+      tracking-normal text-text"
+  >
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Retry before the error is thrown
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    <InlineCode>onResponseError</InlineCode> runs on a failing response. The
+    response includes <InlineCode>replayRequest()</InlineCode>, so token refresh
+    logic can retry the original request once and return the new response.
+  </p>
+
+  <CodeBlock code={RETRY_CODE} filename="retry.ts" />
+
+  <aside
+    class="mb-6 flex gap-3.5 rounded-xl border border-accent/25 bg-accent/10
+      px-5 py-4"
+  >
+    <span class="mt-0.5 shrink-0 text-accent">
+      <svg
+        class="size-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4M12 8h.01" />
+      </svg>
+    </span>
+    <p class="m-0 text-[15px] text-text">
+      Return a <InlineCode>Response</InlineCode> to continue. Return nothing and
+      Fetchja throws the original <InlineCode>FetchjaError</InlineCode>.
+    </p>
+  </aside>
+</DocSection>

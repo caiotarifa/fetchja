@@ -1,0 +1,20 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import { QUICK_START_CODE } from '../../lib/content'
+---
+
+<DocSection
+  id="quickstart"
+  kicker="Quick start"
+  title="Create a client once, then call resources by name."
+>
+  <Fragment slot="lede">
+    Use <InlineCode>get</InlineCode> for reads. Responses expose
+    <InlineCode>data</InlineCode>, <InlineCode>meta</InlineCode>, status, and
+    headers as plain values.
+  </Fragment>
+
+  <CodeBlock code={QUICK_START_CODE} filename="quick-start.ts" />
+</DocSection>

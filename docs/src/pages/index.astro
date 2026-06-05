@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
+import Hero from '../components/Hero.astro'
+import Why from '../components/sections/Why.astro'
+import Install from '../components/sections/Install.astro'
+import QuickStart from '../components/sections/QuickStart.astro'
+import Options from '../components/sections/Options.astro'
+import Methods from '../components/sections/Methods.astro'
+import Relationships from '../components/sections/Relationships.astro'
+import Query from '../components/sections/Query.astro'
+import CustomFetch from '../components/sections/CustomFetch.astro'
+import Errors from '../components/sections/Errors.astro'
+import TanStack from '../components/sections/TanStack.astro'
+import TypeScript from '../components/sections/TypeScript.astro'
+import Plurals from '../components/sections/Plurals.astro'
+import Faq from '../components/sections/Faq.astro'
+import Footer from '../components/Footer.astro'
+---
+<Base>
+  <Nav />
+  <a id="top"></a>
+  <Hero />
+  <Why />
+  <Install />
+  <QuickStart />
+  <Options />
+  <Methods />
+  <Relationships />
+  <Query />
+  <CustomFetch />
+  <Errors />
+  <TanStack />
+  <TypeScript />
+  <Plurals />
+  <Faq />
+  <Footer />
+  <script>
+    import '../scripts/theme.ts'
+    import '../scripts/copy.ts'
+    import '../scripts/reveal.ts'
+  </script>
+</Base>

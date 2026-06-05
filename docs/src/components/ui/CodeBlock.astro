@@ -1,0 +1,26 @@
+---
+import { Code } from 'astro:components'
+import Window from './Window.astro'
+import CopyButton from './CopyButton.astro'
+
+const { code, lang = 'javascript', filename } = Astro.props
+---
+
+<figure class="group relative mb-6">
+  <Window filename={filename}>
+    <div
+      class="[&_pre]:m-0 [&_pre]:overflow-x-auto [&_pre]:bg-[--code-bg]
+        [&_pre]:px-5 [&_pre]:py-5.5 [&_pre]:font-mono
+        [&_pre]:text-sm [&_pre]:leading-[1.7] [&_pre]:tab-2
+        sm:[&_pre]:px-6"
+    >
+      <Code
+        code={code.trim()}
+        lang={lang as any}
+        themes={{ light: 'github-light', dark: 'github-dark' }}
+        defaultColor={false}
+      />
+    </div>
+    <CopyButton text={code.trim()} />
+  </Window>
+</figure>

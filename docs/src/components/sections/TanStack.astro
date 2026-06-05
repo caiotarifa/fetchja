@@ -1,0 +1,35 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import {
+  TANSTACK_MUTATION_CODE,
+  TANSTACK_QUERY_CODE
+} from '../../lib/content'
+---
+
+<DocSection
+  id="tanstack"
+  kicker="TanStack Query"
+  title="Drop Fetchja behind your existing cache layer."
+  tone="muted"
+>
+  <Fragment slot="lede">
+    Fetchja works cleanly with
+    <a
+      class="text-accent underline decoration-accent/40 underline-offset-4
+        transition hover:decoration-accent"
+      href="https://tanstack.com/query"
+      target="_blank"
+      rel="noopener"
+    >
+      TanStack Query
+    </a>.
+    Because failed requests throw, query and mutation error states work through
+    the normal TanStack Query flow.
+  </Fragment>
+
+  <div class="grid gap-4 lg:grid-cols-2">
+    <CodeBlock code={TANSTACK_QUERY_CODE} filename="use-articles.ts" />
+    <CodeBlock code={TANSTACK_MUTATION_CODE} filename="use-create-article.ts" />
+  </div>
+</DocSection>

@@ -1,0 +1,208 @@
+---
+import { Code } from 'astro:components'
+import DocSection from '../common/DocSection.astro'
+import HttpBadge from '../ui/HttpBadge.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import Tag from '../ui/Tag.astro'
+import Window from '../ui/Window.astro'
+import { CRUD_EXAMPLES, METHODS } from '../../lib/content'
+
+const headClass =
+  'whitespace-nowrap border-b border-border bg-bg-2 px-4 py-3.5 text-left ' +
+  'font-mono text-xs font-semibold uppercase tracking-[0.06em] ' +
+  'text-text-faint sm:px-5'
+
+const cellClass =
+  'border-b border-border px-4 py-3.5 align-top sm:px-5'
+---
+
+<DocSection
+  id="methods"
+  kicker="Methods"
+  title="Four verbs, with aliases that read naturally."
+>
+  <Fragment slot="lede">
+    Use <InlineCode>get</InlineCode>, <InlineCode>post</InlineCode>,
+    <InlineCode>patch</InlineCode>, and <InlineCode>delete</InlineCode>, or
+    the aliases <InlineCode>fetch</InlineCode>, <InlineCode>create</InlineCode>,
+    <InlineCode>update</InlineCode>, and <InlineCode>remove</InlineCode>.
+  </Fragment>
+
+  <div
+    class="mb-8 overflow-hidden rounded-2xl border border-border
+      bg-surface shadow-(--shadow)"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[14.5px]">
+        <thead>
+          <tr>
+            <th class={headClass}>Method</th>
+            <th class={headClass}>Alias</th>
+            <th class={headClass}>Signature</th>
+            <th class={headClass}>HTTP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            METHODS.map((item, index) => (
+              <tr class="transition hover:bg-bg-2">
+                <td
+                  class:list={[
+                    cellClass,
+                    index === METHODS.length - 1 && 'border-b-0'
+                  ]}
+                >
+                  <b class="font-mono text-[13.5px] font-semibold text-accent">
+                    {item.method}
+                  </b>
+                </td>
+                <td
+                  class:list={[
+                    cellClass,
+                    index === METHODS.length - 1 && 'border-b-0'
+                  ]}
+                >
+                  <Tag>{item.alias}</Tag>
+                </td>
+                <td
+                  class:list={[
+                    cellClass,
+                    index === METHODS.length - 1 && 'border-b-0'
+                  ]}
+                >
+                  <InlineCode>{item.signature}</InlineCode>
+                </td>
+                <td
+                  class:list={[
+                    cellClass,
+                    index === METHODS.length - 1 && 'border-b-0'
+                  ]}
+                >
+                  <Tag>{item.http}</Tag>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div
+    class="grid items-start gap-7 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+    id="crudExplorer"
+  >
+    <div class="flex flex-col" role="tablist" aria-label="Fetchja methods">
+      {
+        CRUD_EXAMPLES.map((step, index) => (
+          <button
+            class:list={[
+              'crud-step flex items-start gap-3.5 rounded-r-[10px] border-0',
+              'border-l-2 border-border bg-transparent px-5 py-4 text-left',
+              'transition hover:border-border-2 hover:bg-bg-2',
+              index === 0 && 'is-active'
+            ]}
+            data-step={index}
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+          >
+            <HttpBadge tone={step.tone}>{step.http}</HttpBadge>
+            <span class="flex min-w-0 flex-col gap-1">
+              <span
+                class="crud-step-title text-sm font-semibold text-text-mut
+                  transition"
+              >
+                {step.title}
+              </span>
+              <code
+                class="crud-step-call wrap-break-word font-mono text-[12.5px]
+                  text-text-faint transition"
+              >
+                {step.call}
+              </code>
+            </span>
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="md:sticky md:top-20">
+      <Window filename="response">
+        <div class="relative">
+          {
+            CRUD_EXAMPLES.map((step, index) => (
+              <div
+                class:list={[
+                  'resp-state p-5 font-mono text-[13px] leading-[1.8]',
+                  index === 0 && 'is-active'
+                ]}
+                data-step={index}
+                role="tabpanel"
+              >
+                <div
+                  class="[&_pre]:m-0 [&_pre]:overflow-x-auto
+                    [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono
+                    [&_pre]:text-[13px] [&_pre]:leading-[1.8]"
+                >
+                  <Code
+                    code={step.response}
+                    lang="json"
+                    themes={{ light: 'github-light', dark: 'github-dark' }}
+                    defaultColor={false}
+                  />
+                </div>
+                <div
+                  class="mt-4 rounded-lg border border-accent/25 bg-accent/10
+                    px-3.5 py-2 font-sans text-[12.5px] font-medium
+                    text-accent"
+                >
+                  {step.note}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </Window>
+    </div>
+  </div>
+</DocSection>
+
+<script>
+  import '../../scripts/crud.ts'
+</script>
+
+<style>
+  .crud-step.is-active {
+    background: var(--bg-2);
+    border-left-color: var(--accent);
+  }
+
+  .crud-step.is-active .crud-step-title {
+    color: var(--accent);
+  }
+
+  .crud-step.is-active .crud-step-call {
+    color: var(--text);
+  }
+
+  .resp-state {
+    display: none;
+    animation: resp-in 0.22s ease;
+  }
+
+  .resp-state.is-active {
+    display: block;
+  }
+
+  @keyframes resp-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

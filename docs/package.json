@@ -1,0 +1,27 @@
+{
+  "name": "fetchja-docs",
+  "type": "module",
+  "version": "2.1.0",
+  "scripts": {
+    "generate:public": "node scripts/generate-public-assets.mjs",
+    "prebuild": "npm run generate:public",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "lint": "../node_modules/.bin/eslint src astro.config.mjs",
+    "validate": "npm run lint && npm run check && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.8",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.4.3",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.5"
+  }
+}

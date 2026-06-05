@@ -1,0 +1,31 @@
+---
+interface Props { filename?: string }
+const { filename } = Astro.props
+---
+
+<div
+  class="relative overflow-hidden rounded-2xl border border-border
+    bg-(--code-bg) shadow-(--shadow)"
+>
+  <div
+    class="flex h-11 items-center gap-2 overflow-hidden border-b
+      border-border bg-bg-2 px-4"
+  >
+    <div class="flex gap-1.75" aria-hidden="true">
+      <span class="block size-2.75 rounded-full bg-border-2"></span>
+      <span class="block size-2.75 rounded-full bg-border-2"></span>
+      <span class="block size-2.75 rounded-full bg-border-2"></span>
+    </div>
+    {
+      filename && (
+        <span
+          class="ml-1 shrink-0 whitespace-nowrap font-mono text-[12.5px]
+            text-text-faint"
+        >
+          {filename}
+        </span>
+      )
+    }
+  </div>
+  <slot />
+</div>

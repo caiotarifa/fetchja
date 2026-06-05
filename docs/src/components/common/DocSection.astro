@@ -1,0 +1,45 @@
+---
+import Container from './Container.astro'
+
+interface Props {
+  id: string
+  kicker: string
+  title: string
+  tone?: 'default' | 'muted'
+}
+
+const { id, kicker, title, tone = 'default' } = Astro.props
+const hasLede = Astro.slots.has('lede')
+---
+
+<section
+  id={id}
+  class:list={[
+    'scroll-mt-24 border-t border-border py-16 sm:py-18',
+    tone === 'muted' ? 'bg-bg-2' : 'bg-bg'
+  ]}
+>
+  <Container>
+    <div
+      class="mb-3 flex items-center gap-2.5 font-mono text-xs font-semibold
+        uppercase tracking-[0.12em] text-accent sm:text-[12.5px]"
+    >
+      <span class="h-px w-5 bg-accent"></span>
+      {kicker}
+    </div>
+    <h2
+      class="mb-4 max-w-4xl text-balance text-[clamp(28px,3.4vw,40px)]
+        font-bold leading-[1.08] tracking-normal text-text"
+    >
+      {title}
+    </h2>
+    {
+      hasLede && (
+        <div class="mb-9 max-w-[44em] text-lg leading-[1.62] text-text-mut">
+          <slot name="lede" />
+        </div>
+      )
+    }
+    <slot />
+  </Container>
+</section>

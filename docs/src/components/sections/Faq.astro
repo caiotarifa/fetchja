@@ -1,0 +1,32 @@
+---
+import DocSection from '../common/DocSection.astro'
+import { FAQ } from '../../lib/content'
+---
+
+<DocSection id="faq" kicker="FAQ" title="Questions, answered." tone="muted">
+  <div class="mt-7 flex flex-col gap-3">
+    {
+      FAQ.map(item => (
+        <details
+          class="group rounded-xl border border-border bg-surface px-5 py-1"
+        >
+          <summary
+            class="flex cursor-pointer list-none items-center justify-between
+              gap-4 py-4 font-semibold text-text
+              [&::-webkit-details-marker]:hidden"
+          >
+            {item.q}
+            <span
+              class="text-[22px] leading-none text-accent transition
+                group-open:rotate-45"
+              aria-hidden="true"
+            >
+              +
+            </span>
+          </summary>
+          <p class="m-0 mb-4 text-text-mut">{item.a}</p>
+        </details>
+      ))
+    }
+  </div>
+</DocSection>

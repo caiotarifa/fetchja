@@ -1,0 +1,90 @@
+---
+import BrandMark from './icons/BrandMark.astro'
+import Container from './common/Container.astro'
+import ThemeToggle from './ui/ThemeToggle.astro'
+import { NAV_LINKS } from '../lib/content'
+import { SITE } from '../lib/site'
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-border bg-bg/80
+    backdrop-blur-xl backdrop-saturate-150"
+>
+  <Container
+    class="grid h-16 grid-cols-[1fr_auto] items-center gap-4
+      lg:grid-cols-[1fr_auto_1fr]"
+  >
+    <div class="flex min-w-0 items-center gap-3">
+      <a
+        class="flex shrink-0 items-center gap-1.5 font-semibold leading-none"
+        href="#top"
+        aria-label="Fetchja home"
+      >
+        <span class="block size-7.5 translate-y-px text-text">
+          <BrandMark />
+        </span>
+        <span
+          class="text-[22px] font-semibold leading-none tracking-normal
+            text-text"
+        >
+          fetch<span class="text-accent">ja</span>
+        </span>
+      </a>
+      <a
+        class="rounded-full border border-accent/25 bg-accent/10 px-2.5
+          py-1 font-mono text-[11px] font-semibold tracking-[0.03em]
+          text-accent transition hover:border-accent hover:bg-accent/15"
+        href={SITE.npm}
+        target="_blank"
+        rel="noopener"
+        aria-label={`Version ${SITE.version} on npm`}
+      >
+        v{SITE.version}
+      </a>
+    </div>
+
+    <nav class="hidden items-center justify-center lg:flex">
+      {
+        NAV_LINKS.map(link => (
+          <a
+            class="rounded-lg px-3 py-2 font-mono text-[13px]
+              text-text-mut transition hover:bg-bg-2 hover:text-text"
+            href={link.href}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center justify-end gap-2">
+      <ThemeToggle />
+      <a
+        class="inline-flex items-center gap-2 rounded-[10px] border
+          border-border bg-surface px-3.5 py-2 font-mono text-[13px]
+          font-medium text-text transition hover:-translate-y-px
+          hover:border-accent hover:text-accent"
+        href={SITE.repo}
+        target="_blank"
+        rel="noopener"
+      >
+        <svg class="size-4" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9
+              10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4
+              -.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7
+              1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1
+              .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7
+              0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1
+              0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0
+              C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1
+              .8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7
+              .4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5
+              4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"
+          />
+        </svg>
+        <span>Star</span>
+      </a>
+    </div>
+  </Container>
+</header>

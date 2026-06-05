@@ -4,7 +4,14 @@ import stylistic from '@stylistic/eslint-plugin'
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**']
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+
+      'docs/.astro/**',
+      'docs/node_modules/**',
+      'docs/dist/**'
+    ]
   },
 
   js.configs.recommended,

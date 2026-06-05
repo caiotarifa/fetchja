@@ -1,0 +1,36 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import {
+  RELATIONSHIP_CREATE_CODE,
+  RELATIONSHIP_READ_CODE
+} from '../../lib/content'
+---
+
+<DocSection
+  id="relationships"
+  kicker="Relationships & included"
+  title="Write nested objects. Read hydrated objects."
+  tone="muted"
+>
+  <Fragment slot="lede">
+    To send a relationship, put an object or list with
+    <InlineCode>type</InlineCode> and <InlineCode>id</InlineCode> inside your
+    data. Fetchja moves it into the JSON:API relationship shape and keeps the
+    included resource payload aligned.
+  </Fragment>
+
+  <CodeBlock
+    code={RELATIONSHIP_CREATE_CODE}
+    filename="create-with-relationships.ts"
+  />
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    When data comes back, resources from <InlineCode>included</InlineCode> are
+    merged into <InlineCode>data</InlineCode>. You can access relationships
+    like normal nested objects.
+  </p>
+
+  <CodeBlock code={RELATIONSHIP_READ_CODE} filename="read-relationship.ts" />
+</DocSection>

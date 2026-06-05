@@ -1,0 +1,119 @@
+---
+import BrandMark from './icons/BrandMark.astro'
+import Container from './common/Container.astro'
+import { SITE } from '../lib/site'
+
+const footerLinkClass =
+  'block py-1 text-[14.5px] text-text-mut transition hover:text-accent'
+---
+
+<footer class="border-t border-border bg-bg-2 py-14 sm:py-16">
+  <Container>
+    <div class="flex flex-wrap items-start justify-between gap-10">
+      <div class="max-w-xl">
+        <a
+          class="inline-flex items-center gap-1.5 font-semibold leading-none"
+          href="#top"
+        >
+          <span class="block size-8.5 text-text">
+            <BrandMark />
+          </span>
+          <span class="text-[22px] tracking-normal text-text">
+            fetch<span class="text-accent">ja</span>
+          </span>
+        </a>
+        <p class="mt-4 text-[14.5px] leading-relaxed text-text-mut">
+          A tiny, zero-dependency JSON:API client built on native fetch.
+          Inspired by
+          <a
+            class="text-accent underline decoration-accent/40 underline-offset-4
+              transition hover:decoration-accent"
+            href="https://github.com/wopian/kitsu"
+            target="_blank"
+            rel="noopener"
+          >
+            Kitsu
+          </a>,
+          but with no runtime dependencies.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-10 sm:gap-14">
+        <div>
+          <h5
+            class="mb-3.5 font-mono text-xs uppercase tracking-[0.08em]
+              text-text-faint"
+          >
+            Docs
+          </h5>
+          <a class={footerLinkClass} href="#why">Why Fetchja</a>
+          <a class={footerLinkClass} href="#quickstart">Quick start</a>
+          <a class={footerLinkClass} href="#options">Options</a>
+          <a class={footerLinkClass} href="#methods">Methods</a>
+          <a class={footerLinkClass} href="#query">Query params</a>
+        </div>
+        <div>
+          <h5
+            class="mb-3.5 font-mono text-xs uppercase tracking-[0.08em]
+              text-text-faint"
+          >
+            Guides
+          </h5>
+          <a class={footerLinkClass} href="#relationships">Relationships</a>
+          <a class={footerLinkClass} href="#errors">Errors &amp; retries</a>
+          <a class={footerLinkClass} href="#tanstack">TanStack Query</a>
+          <a class={footerLinkClass} href="#typescript">TypeScript</a>
+          <a class={footerLinkClass} href="#plurals">Plurals</a>
+        </div>
+        <div>
+          <h5
+            class="mb-3.5 font-mono text-xs uppercase tracking-[0.08em]
+              text-text-faint"
+          >
+            Project
+          </h5>
+          <a class={footerLinkClass} href={SITE.repo} target="_blank" rel="noopener">
+            GitHub
+          </a>
+          <a class={footerLinkClass} href={SITE.npm} target="_blank" rel="noopener">
+            npm
+          </a>
+          <a
+            class={footerLinkClass}
+            href={SITE.jsonapi}
+            target="_blank"
+            rel="noopener"
+          >
+            JSON:API spec
+          </a>
+          <a
+            class={footerLinkClass}
+            href={SITE.issues}
+            target="_blank"
+            rel="noopener"
+          >
+            Issues
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mt-11 flex flex-wrap justify-between gap-4 border-t border-border
+        pt-6 font-mono text-[12.5px] text-text-faint"
+    >
+      <span>
+        {SITE.license} License - built by
+        <a
+          class="text-accent underline decoration-accent/40 underline-offset-4
+            transition hover:decoration-accent"
+          href={SITE.author.url}
+          target="_blank"
+          rel="noopener"
+        >
+          @caiotarifa
+        </a>
+      </span>
+      <span>npm install fetchja</span>
+    </div>
+  </Container>
+</footer>

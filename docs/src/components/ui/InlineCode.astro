@@ -1,0 +1,9 @@
+---
+const className = [
+  'inline-flex items-center whitespace-nowrap rounded-md border border-border',
+  'bg-(--code-bg) px-[0.35em] py-[0.12em] align-[0.08em]',
+  'font-mono text-[0.86em] leading-none text-text'
+].join(' ')
+---
+
+<code class={className}><slot /></code>

@@ -1,0 +1,221 @@
+---
+import Container from './common/Container.astro'
+import CodeBlock from './ui/CodeBlock.astro'
+import InlineCode from './ui/InlineCode.astro'
+import { HERO } from '../lib/content'
+import { SITE } from '../lib/site'
+---
+
+<section class="hero-scene relative overflow-hidden py-16 sm:py-24">
+  <Container class="relative z-10">
+    <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+      <div>
+        <span
+          class="mb-5 inline-flex items-center gap-2 whitespace-nowrap
+            rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5
+            font-mono text-[12.5px] text-accent"
+        >
+          <span
+            class="pulse-dot size-1.75 rounded-full bg-accent"
+            aria-hidden="true"
+          ></span>
+          {HERO.eyebrow}
+        </span>
+        <h1
+          class="mb-5 max-w-[11em] text-balance text-[clamp(40px,5.6vw,66px)]
+            font-bold leading-[1.02] tracking-normal text-text"
+        >
+          The easiest way to use
+          <span class="text-accent"> JSON:API.</span>
+        </h1>
+        <p class="mb-7 max-w-[31em] text-[19px] leading-[1.6] text-text-mut">
+          Say goodbye to complex serializers. Fetchja turns plain objects
+          into JSON:API requests and auto-resolves relationships, all while
+          staying tiny and built on native <InlineCode>fetch</InlineCode>.
+        </p>
+
+        <div class="mt-6 flex flex-wrap items-stretch gap-2.5">
+          <div
+            class="inline-flex items-center gap-3.5 rounded-xl border
+              border-border bg-surface py-2.5 pl-4 pr-2.5 font-mono
+              text-sm shadow-(--shadow)"
+          >
+            <span class="text-accent">$</span>
+            <code class="text-text">{HERO.installCommand}</code>
+            <button
+              class="grid size-8 place-items-center rounded-lg border
+                border-border bg-bg-2 text-text-mut transition
+                hover:border-accent hover:text-accent
+                [&.copied]:border-accent [&.copied]:text-accent"
+              data-copy={HERO.installCommand}
+              aria-label="Copy install command"
+            >
+              <span class="ci [&_svg]:size-3.75">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="11" height="11" rx="2" />
+                  <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                </svg>
+              </span>
+            </button>
+          </div>
+          <a
+            class="grid size-15 place-items-center rounded-[10px]
+              border border-border bg-surface text-text-mut transition
+              hover:-translate-y-px hover:border-accent hover:text-accent
+              hover:shadow-[0_4px_14px_var(--glow)]"
+            href={SITE.repo}
+            target="_blank"
+            rel="noopener"
+            aria-label="GitHub"
+          >
+            <svg class="size-4.25" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9
+                  10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4
+                  -.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7
+                  1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1
+                  .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7
+                  0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1
+                  0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0
+                  C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1
+                  .8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7
+                  .4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5
+                  4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"
+              />
+            </svg>
+          </a>
+          <a
+            class="grid size-15 place-items-center rounded-[10px]
+              border border-border bg-surface text-text-mut transition
+              hover:-translate-y-px hover:border-accent hover:text-accent
+              hover:shadow-[0_4px_14px_var(--glow)]"
+            href={SITE.npm}
+            target="_blank"
+            rel="noopener"
+            aria-label="npm"
+          >
+            <svg
+              class="size-4.25"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            >
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0
+                  l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4
+                  a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+              />
+              <path d="m3.27 6.96 8.73 5.05 8.73-5.05" />
+              <path d="M12 22.08V12" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-9 flex flex-wrap gap-x-7 gap-y-4">
+          {
+            HERO.stats.map(stat => (
+              <div>
+                <div
+                  class="font-mono text-[26px] font-bold leading-tight
+                    tracking-normal text-text"
+                >
+                  {stat.accent ? (
+                    <span class="text-accent">{stat.value}</span>
+                  ) : (
+                    stat.value
+                  )}
+                  {stat.suffix}
+                </div>
+                <div
+                  class="font-mono text-[12.5px] uppercase tracking-[0.06em]
+                    text-text-faint"
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="min-w-0">
+        <CodeBlock code={HERO.code} filename="articles.ts" />
+      </div>
+    </div>
+  </Container>
+</section>
+
+<style>
+  .hero-scene {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--accent) 8%, transparent),
+        transparent 34%
+      ),
+      var(--bg);
+  }
+
+  .hero-scene::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background-image:
+      linear-gradient(
+        color-mix(in oklch, var(--accent) 10%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--accent) 10%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 44px 44px;
+    mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%);
+    opacity: 0.75;
+  }
+
+  :global([data-theme="dark"]) .hero-scene::before {
+    background-image:
+      linear-gradient(
+        color-mix(in oklch, var(--accent) 16%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--accent) 16%, transparent) 1px,
+        transparent 1px
+      );
+  }
+
+  .pulse-dot {
+    animation: pulse 2.4s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(
+        in oklch,
+        var(--accent) 60%,
+        transparent
+      );
+    }
+
+    70%,
+    100% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+  }
+</style>

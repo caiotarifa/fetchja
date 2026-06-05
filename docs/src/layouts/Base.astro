@@ -1,0 +1,89 @@
+---
+import '@fontsource/space-grotesk/400.css'
+import '@fontsource/space-grotesk/500.css'
+import '@fontsource/space-grotesk/600.css'
+import '@fontsource/space-grotesk/700.css'
+import '@fontsource/jetbrains-mono/400.css'
+import '@fontsource/jetbrains-mono/500.css'
+import '@fontsource/jetbrains-mono/600.css'
+import '@fontsource/jetbrains-mono/700.css'
+import '../styles/global.css'
+import { SITE } from '../lib/site'
+import {
+  softwareSourceCodeJsonLd,
+  softwareApplicationJsonLd,
+  faqJsonLd
+} from '../lib/seo'
+
+const { title, description = SITE.description } = Astro.props
+const pageTitle = title
+  ? `${title} - ${SITE.name}`
+  : `${SITE.name} - ${SITE.tagline}`
+const canonical = new URL(Astro.url.pathname, SITE.url).href
+const ogImage = new URL('/og.png', SITE.url).href
+
+const jsonLd = [
+  softwareSourceCodeJsonLd(),
+  softwareApplicationJsonLd(),
+  faqJsonLd()
+]
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={`${SITE.name} logo and tagline`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={`${SITE.name} logo and tagline`} />
+
+    <script is:inline>
+      (function () {
+        try {
+          var theme = localStorage.getItem('fetchja-theme')
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+
+          if (!theme && prefersDark) theme = 'dark'
+          if (theme) document.documentElement.setAttribute('data-theme', theme)
+        } catch (error) {
+          void error
+        }
+      })()
+    </script>
+
+    {jsonLd.map((data) => (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(data)} />
+    ))}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

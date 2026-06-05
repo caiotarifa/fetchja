@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  --accent-h: 300;
+  --accent: oklch(0.62 0.19 var(--accent-h));
+  --accent-bright: oklch(0.70 0.18 var(--accent-h));
+  --bg: oklch(0.992 0.003 var(--accent-h));
+  --bg-2: oklch(0.975 0.005 var(--accent-h));
+  --surface: oklch(1 0 0);
+  --code-bg: oklch(0.972 0.006 var(--accent-h));
+  --text: oklch(0.24 0.012 var(--accent-h));
+  --text-mut: oklch(0.50 0.012 var(--accent-h));
+  --text-faint: oklch(0.64 0.010 var(--accent-h));
+  --border: oklch(0.91 0.006 var(--accent-h));
+  --border-2: oklch(0.86 0.008 var(--accent-h));
+  --shadow:
+    0 1px 2px oklch(0.5 0.02 var(--accent-h) / 0.06),
+    0 12px 28px oklch(0.5 0.05 var(--accent-h) / 0.07);
+  --glow: oklch(0.70 0.18 var(--accent-h) / 0.14);
+  --tok-prop: oklch(0.48 0.10 230);
+  --tok-str: oklch(0.50 0.13 150);
+}
+
+[data-theme="dark"] {
+  --accent: oklch(0.74 0.16 var(--accent-h));
+  --accent-bright: oklch(0.80 0.15 var(--accent-h));
+  --bg: oklch(0.172 0.013 var(--accent-h));
+  --bg-2: oklch(0.205 0.015 var(--accent-h));
+  --surface: oklch(0.215 0.015 var(--accent-h));
+  --code-bg: oklch(0.205 0.016 var(--accent-h));
+  --text: oklch(0.95 0.006 var(--accent-h));
+  --text-mut: oklch(0.70 0.013 var(--accent-h));
+  --text-faint: oklch(0.56 0.012 var(--accent-h));
+  --border: oklch(0.29 0.014 var(--accent-h));
+  --border-2: oklch(0.36 0.016 var(--accent-h));
+  --shadow:
+    0 1px 2px oklch(0 0 0 / 0.3),
+    0 16px 40px oklch(0 0 0 / 0.4);
+  --glow: oklch(0.74 0.16 var(--accent-h) / 0.22);
+  --tok-prop: oklch(0.80 0.09 225);
+  --tok-str: oklch(0.80 0.13 150);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-mut: var(--text-mut);
+  --color-text-faint: var(--text-faint);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-accent: var(--accent);
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 90px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--glow);
+}
+
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .astro-code,
+[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark) !important;
+}
+
+.astro-code {
+  background-color: var(--code-bg) !important;
+}
+
+pre::-webkit-scrollbar {
+  height: 9px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 9px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

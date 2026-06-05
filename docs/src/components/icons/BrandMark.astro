@@ -1,0 +1,39 @@
+---
+import { BRAND_MARK } from '../../lib/brand.js'
+---
+
+<svg viewBox={BRAND_MARK.viewBox} fill="none" aria-hidden="true">
+  <path
+    d={BRAND_MARK.leftBrace}
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-width={BRAND_MARK.strokeWidth}
+  />
+  <path
+    d={BRAND_MARK.rightBrace}
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-width={BRAND_MARK.strokeWidth}
+  />
+  <circle
+    cx={BRAND_MARK.topDot.cx}
+    cy={BRAND_MARK.topDot.cy}
+    r={BRAND_MARK.dotRadius}
+    fill="currentColor"
+  />
+  <circle
+    cx={BRAND_MARK.bottomDot.cx}
+    cy={BRAND_MARK.bottomDot.cy}
+    r={BRAND_MARK.dotRadius}
+    fill="var(--accent)"
+  />
+  <line
+    x1={BRAND_MARK.line.x1}
+    x2={BRAND_MARK.line.x2}
+    y1={BRAND_MARK.line.y1}
+    y2={BRAND_MARK.line.y2}
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-width={BRAND_MARK.strokeWidth}
+  />
+</svg>

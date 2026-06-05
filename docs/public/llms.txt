@@ -1,0 +1,19 @@
+# Fetchja
+
+> A tiny, modern, zero-dependency JSON:API client built on the native Fetch API.
+
+Fetchja turns plain objects into JSON:API requests and turns responses back into plain objects with relationships already resolved from included.
+
+## Key facts
+- Zero runtime dependencies; uses the built-in fetch.
+- About 5KB minified. Ships its own TypeScript types.
+- Methods: get/fetch, post/create, patch/update, delete/remove.
+- JSON:API 1.1 compliant query serialization.
+- Throws FetchjaError; onResponseError can retry via replayRequest().
+
+## Links
+- Site: https://fetchja.dev
+- Repository: https://github.com/caiotarifa/fetchja
+- npm: https://www.npmjs.com/package/fetchja
+- JSON:API spec: https://jsonapi.org
+- Full docs: https://fetchja.dev/llms-full.txt

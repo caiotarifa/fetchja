@@ -1,0 +1,60 @@
+---
+import DocSection from '../common/DocSection.astro'
+import FeatureIcon from '../icons/FeatureIcon.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import { FEATURES } from '../../lib/content'
+---
+
+<DocSection
+  id="why"
+  kicker="Why Fetchja"
+  title="Less protocol plumbing. More application code."
+>
+  <Fragment slot="lede">
+    JSON:API gives teams a useful contract, but the wire format is verbose.
+    Fetchja handles serialization, <InlineCode>included</InlineCode> data,
+    query strings, and relationship hydration so your app can stay close to
+    plain objects.
+  </Fragment>
+
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {
+      FEATURES.map(feature => (
+        <article
+          class="reveal group relative overflow-hidden rounded-2xl border
+            border-border bg-surface p-6 transition duration-200
+            hover:-translate-y-1 hover:border-border-2
+            hover:shadow-[var(--shadow)]"
+        >
+          <div
+            class="mb-4 grid size-[42px] place-items-center rounded-[11px]
+              bg-accent/10 text-accent"
+          >
+            <span class="block size-[22px]">
+              <FeatureIcon name={feature.icon} />
+            </span>
+          </div>
+          <h3 class="mb-2 text-[17px] font-semibold tracking-normal text-text">
+            {feature.title}
+          </h3>
+          <p class="m-0 text-[14.5px] leading-[1.55] text-text-mut">
+            {feature.body}
+          </p>
+        </article>
+      ))
+    }
+  </div>
+</DocSection>
+
+<style>
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+</style>
