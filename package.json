@@ -21,6 +21,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --minify --sourcemap --clean",
     "test": "node --import tsx --test tests/*.test.ts",
+    "test:integration": "node --import tsx --test tests/integration/*.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
