@@ -1,7 +1,7 @@
 {
   "name": "fetchja-docs",
-  "type": "module",
   "version": "2.1.0",
+  "type": "module",
   "scripts": {
     "generate:public": "node scripts/generate-public-assets.mjs",
     "prebuild": "npm run generate:public",
@@ -16,9 +16,9 @@
     "@astrojs/check": "^0.9.9",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "@fontsource/space-grotesk": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10",
     "@tailwindcss/vite": "^4.3.0",
-    "astro": "^6.4.3",
+    "astro": "^6.4.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
