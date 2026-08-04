@@ -169,6 +169,14 @@ export function serialize (
       }
 
       if (isPlainObject(value)) {
+        // An explicit `id: null` clears a to-one relationship. A missing
+        // `id` keeps throwing, so a forgotten key stays a loud error.
+        if (value.id === null) {
+          relationships[key] = { data: null }
+
+          continue
+        }
+
         relationships[key] = { data: toIdentifier(value, key) }
         collectIncluded(value, key)
 

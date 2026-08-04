@@ -44,6 +44,44 @@ test('builds to-one relationships and included', () => {
   assert.equal(included[0].attributes.name, 'Ann')
 })
 
+test('clears a to-one relationship with an explicit null id', () => {
+  const json = serialize(
+    'brand',
+    { id: '1', logoDocument: { type: 'documents', id: null } },
+    opts
+  )
+  const { data, included } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.logoDocument, { data: null })
+  assert.equal(data.attributes, undefined)
+  assert.deepEqual(included, [])
+})
+
+test('clears a to-one relationship without a type', () => {
+  const json = serialize('brand', { id: '1', author: { id: null } }, opts)
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.author, { data: null })
+})
+
+test('clears a to-one relationship on a nested resource', () => {
+  const json = serialize(
+    'post',
+    {
+      author: {
+        type: 'users',
+        id: '9',
+        company: { type: 'companies', id: null }
+      }
+    },
+    opts
+  )
+  const { included } = JSON.parse(json)
+
+  assert.deepEqual(included[0].relationships.company, { data: null })
+  assert.equal(included.length, 1)
+})
+
 test('throws FetchjaError when included resource lacks an id', () => {
   assert.throws(
     () => serialize('post', { author: { name: 'Ann' } }, opts),

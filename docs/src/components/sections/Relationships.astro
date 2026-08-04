@@ -3,6 +3,7 @@ import DocSection from '../common/DocSection.astro'
 import CodeBlock from '../ui/CodeBlock.astro'
 import InlineCode from '../ui/InlineCode.astro'
 import {
+  RELATIONSHIP_CLEAR_CODE,
   RELATIONSHIP_CREATE_CODE,
   RELATIONSHIP_READ_CODE
 } from '../../lib/content'
@@ -24,6 +25,18 @@ import {
   <CodeBlock
     code={RELATIONSHIP_CREATE_CODE}
     filename="create-with-relationships.ts"
+  />
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    To clear a relationship, send it empty: an empty list for a to-many, and an
+    <InlineCode>id</InlineCode> of <InlineCode>null</InlineCode> for a to-one.
+    An object with no <InlineCode>id</InlineCode> key still throws, so a
+    forgotten key never clears a relationship by accident.
+  </p>
+
+  <CodeBlock
+    code={RELATIONSHIP_CLEAR_CODE}
+    filename="clear-relationships.ts"
   />
 
   <p class="mb-5 max-w-[44em] text-text-mut">

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0 — 2026-08-04
+
+### Fixes
+
+- **To-one relationships can be cleared.** A relationship object with an explicit `id: null` (`author: { id: null }`) now serializes to `relationships.author.data = null`, the shape JSON:API defines for removing a to-one relationship — matching what `tags: []` already did for to-many ([#6](https://github.com/caiotarifa/fetchja/issues/6)). An object with no `id` key still throws `All included resources must have an ID.`, so a forgotten key stays a loud error. A bare `author: null` remains an attribute.
+
 ## 2.1.0 — 2026-06-02
 
 Query serialization is now fully [JSON:API 1.1](https://jsonapi.org/format/1.1/#query-parameters) compliant by default.

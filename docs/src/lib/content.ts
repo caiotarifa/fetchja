@@ -284,6 +284,12 @@ export const RELATIONSHIP_CREATE_CODE = `await api.create('article', {
   ]
 })`
 
+export const RELATIONSHIP_CLEAR_CODE = `await api.update('article', {
+  id: '1',
+  author: { id: null }, // data: null
+  tags: [] // data: []
+})`
+
 export const RELATIONSHIP_READ_CODE = `const { data } = await api.get(
   'articles/1',
   { params: { include: 'author' } }

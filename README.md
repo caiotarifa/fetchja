@@ -141,6 +141,18 @@ await api.create('article', {
 })
 ```
 
+To clear a relationship, send it empty: an empty list for a to-many, and an `id` of `null` for a to-one. Both become `data: null` / `data: []` in the request, the way JSON:API asks for it:
+
+```js
+await api.update('article', {
+  id: '1',
+  author: { id: null }, // relationships.author.data = null
+  tags: [] // relationships.tags.data = []
+})
+```
+
+A plain `author: null` is still an attribute, not a relationship — Fetchja cannot tell the two apart without the object. And an object with **no** `id` key at all still throws, so a forgotten `id` never clears a relationship by accident.
+
 When you read data back, Fetchja takes the resources from `included` and puts them right inside your data. So you can read a relationship like a normal nested object:
 
 ```js
