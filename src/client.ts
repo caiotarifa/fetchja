@@ -200,7 +200,7 @@ export default class Fetchja {
       ? serialize(options.type, options.body, {
           caseType: this.typeCase,
           pluralTypes: this.pluralize
-        })
+        }, options.document)
       : undefined
 
     const requestFetch = this.#fetch ?? fetch
@@ -254,6 +254,7 @@ export default class Fetchja {
         status: response.status,
         statusText: response.statusText,
         errors: payload.errors,
+        document: payload,
         response
       })
     }

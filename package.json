@@ -1,6 +1,6 @@
 {
   "name": "fetchja",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "type": "module",
   "description": "A super simple, modern, lightweight, zero-dependency JSON:API client built on the Fetch API.",
   "author": "Caio Tarifa <caio@yahoo.com>",

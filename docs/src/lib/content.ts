@@ -4,6 +4,7 @@ export const NAV_LINKS = [
   { href: '#quickstart', label: 'quick start' },
   { href: '#options', label: 'options' },
   { href: '#methods', label: 'methods' },
+  { href: '#metadata', label: 'meta & links' },
   { href: '#query', label: 'query' },
   { href: '#typescript', label: 'typescript' }
 ] as const
@@ -19,7 +20,7 @@ export const HERO = {
     'on native fetch, so the client stays small and predictable.'
   ].join(' '),
   stats: [
-    { value: '~5', accent: true, suffix: 'KB', label: 'minified' },
+    { value: '~6', accent: true, suffix: 'KB', label: 'minified' },
     { value: '0', accent: true, suffix: '', label: 'dependencies' },
     { value: '100%', accent: false, suffix: '', label: 'typed' }
   ],
@@ -43,7 +44,7 @@ export const FEATURES = [
     icon: 'bolt',
     title: 'No runtime dependencies',
     body: [
-      'Fetchja uses the platform fetch API and stays around 5 KB minified.',
+      'Fetchja uses the platform fetch API and stays around 6 KB minified.',
       'There is no adapter stack to keep patched.'
     ].join(' ')
   },
@@ -60,7 +61,8 @@ export const FEATURES = [
     title: 'Less JSON:API boilerplate',
     body: [
       'Send and receive plain objects. Fetchja handles resources,',
-      'relationships, included data, and query strings.'
+      'relationships, included data, and query strings — and drops',
+      'nothing the specification defines.'
     ].join(' ')
   },
   {
@@ -204,6 +206,7 @@ export const CRUD_EXAMPLES = [
       '    { "id": "2", "type": "articles", "title": "Second post" }',
       '  ],',
       '  "meta": { "total": 42 },',
+      '  "links": { "next": "/articles?page[offset]=2" },',
       '  "status": 200',
       '}'
     ].join('\n')
@@ -298,6 +301,37 @@ export const RELATIONSHIP_READ_CODE = `const { data } = await api.get(
 console.log(data.author.name)
 // comes from included`
 
+export const METADATA_READ_CODE = `const { data, links } = await api.get(
+  'articles/1'
+)
+
+data.title        // an attribute, flat as always
+data.$.meta       // the resource meta
+data.$.links.self // the resource links
+
+data.$.relationships.author.meta
+data.$.relationships.author.links.related
+
+links.next        // document links, including pagination`
+
+export const METADATA_WRITE_CODE = `await api.create('article', {
+  title: 'Hello world',
+  author: { type: 'people', id: '9' },
+  $: {
+    lid: 'draft-1',
+    meta: { draft: true },
+    relationships: {
+      author: { meta: { role: 'primary' } }
+    }
+  }
+})`
+
+export const METADATA_DOCUMENT_CODE = `await api.create(
+  'article',
+  { title: 'Hello world' },
+  { document: { meta: { source: 'cli' } } }
+)`
+
 export const QUERY_REQUEST_CODE = `await api.get('articles', {
   params: {
     include: ['author', 'comments'],
@@ -345,6 +379,7 @@ try {
     console.log(error.status)
     console.log(error.statusText)
     console.log(error.errors)
+    console.log(error.document)
     console.log(error.response)
   }
 }`
@@ -397,6 +432,7 @@ function useCreateArticle () {
 
 export const TYPESCRIPT_CODE = `import Fetchja, {
   type FetchjaOptions,
+  type ResourceEnvelope,
   FetchjaError
 } from 'fetchja'
 
@@ -405,7 +441,14 @@ const options: FetchjaOptions = {
   resourceCase: 'kebab'
 }
 
-const api = new Fetchja(options)`
+const api = new Fetchja(options)
+
+interface Article {
+  type: 'articles'
+  id: string
+  title: string
+  $?: ResourceEnvelope
+}`
 
 export const CUSTOM_PLURAL_CODE = `import pluralize from 'pluralize'
 
@@ -456,6 +499,15 @@ export const FAQ = [
     a: [
       'Yes. The default formatter follows JSON:API 1.1, and you can pass',
       'queryFormatter when a server expects a different shape.'
+    ].join(' ')
+  },
+  {
+    q: 'Where do meta and links end up?',
+    a: [
+      'On the resource, under a reserved $ key: $.meta, $.links, $.lid,',
+      'and the meta and links of each relationship. JSON:API forbids $ in',
+      'member names, so it never clashes with one of your fields.',
+      'Document-level meta, links, and jsonapi sit next to data.'
     ].join(' ')
   },
   {

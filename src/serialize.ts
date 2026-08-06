@@ -1,4 +1,5 @@
 import { FetchjaError } from './errors.js'
+import type { JsonApiDocument } from './jsonapi.js'
 
 /**
  * Property names that could pollute an object's prototype. They are
@@ -38,17 +39,20 @@ function isPlainObject (
 /**
  * Serialize a plain object into a JSON:API request document. Nested
  * objects with an `id` become relationships, and the full resources are
- * collected into the top-level `included` array.
+ * collected into the top-level `included` array. A `$` key holds the
+ * JSON:API members that have no place in the flat shape.
  *
  * @param type - The resource type of the root object.
  * @param input - The plain object to serialize.
  * @param options - The type-name transforms.
+ * @param document - The top-level members to send with the resource.
  * @returns The JSON:API document as a JSON string.
  */
 export function serialize (
   type: string,
   input: Record<string, unknown>,
-  options: SerializeOptions
+  options: SerializeOptions,
+  document?: JsonApiDocument
 ): string {
   const included: Record<string, unknown>[] = []
   const includedKeys = new Set<string>()
@@ -144,7 +148,7 @@ export function serialize (
     const attributes: Record<string, unknown> = {}
 
     for (const key in node) {
-      if (DANGEROUS_KEYS.has(key) || key === 'type') {
+      if (DANGEROUS_KEYS.has(key) || key === 'type' || key === '$') {
         continue
       }
 
@@ -186,18 +190,47 @@ export function serialize (
       attributes[key] = value
     }
 
+    // `$` carries the JSON:API members that have no place in the flat
+    // shape: `meta`, `links`, `lid`, relationship `meta` and `links`,
+    // and any extension member. They are emitted as they were given.
+    const envelope = node.$
+    let resource = data
+
+    if (isPlainObject(envelope)) {
+      const { relationships: rawRelationships, ...members } = envelope
+      const envelopeRelationships = rawRelationships as
+        Record<string, unknown> | undefined
+
+      resource = { ...data, ...members }
+
+      for (const key in envelopeRelationships) {
+        if (DANGEROUS_KEYS.has(key)) {
+          continue
+        }
+
+        relationships[key] = {
+          ...relationships[key] as Record<string, unknown>,
+          ...envelopeRelationships[key] as Record<string, unknown>
+        }
+      }
+    }
+
     if (Object.keys(attributes).length > 0) {
-      data.attributes = attributes
+      resource.attributes = attributes
     }
 
     if (Object.keys(relationships).length > 0) {
-      data.relationships = relationships
+      resource.relationships = relationships
     }
 
-    return data
+    return resource
   }
 
   const data = extractResource(input, type)
 
-  return JSON.stringify({ data, included })
+  return JSON.stringify({
+    ...document,
+    data,
+    ...(included.length > 0 && { included })
+  })
 }

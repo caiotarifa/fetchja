@@ -22,6 +22,7 @@ const { data } = await api.get('articles')
 - [Options](#options)
 - [Methods](#methods)
 - [Relationships and included data](#relationships-and-included-data)
+- [Meta, links, and the rest of JSON:API](#meta-links-and-the-rest-of-jsonapi)
 - [Query parameters](#query-parameters)
 - [Make your own query formatter](#make-your-own-query-formatter)
 - [Custom fetch](#custom-fetch)
@@ -33,7 +34,7 @@ const { data } = await api.get('articles')
 
 ## Why Fetchja?
 
-- ⚡️ **No dependencies.** It only uses the built-in `fetch`. Nothing extra to download. About 5 KB when minified.
+- ⚡️ **No dependencies.** It only uses the built-in `fetch`. Nothing extra to download. About 6 KB when minified.
 - 🧩 **Typed.** It is written in TypeScript and ships its own types. You get autocomplete out of the box.
 - 🔄 **Less boilerplate.** You send and read plain objects. Fetchja does the JSON:API parts for you.
 - 🪶 **Modern and small.** ESM only, `async`/`await`, no base class to extend.
@@ -121,6 +122,8 @@ const response = await api.get('articles/1')
 
 response.data        // your data (an object, or an array for a list)
 response.meta        // the JSON:API `meta`, if the server sent it
+response.links       // the document links, including pagination
+response.jsonapi     // the server's `jsonapi` object
 response.status      // 200
 response.statusText  // 'OK'
 response.headers     // the response headers, as a plain object
@@ -161,6 +164,53 @@ const { data } = await api.get('articles/1', {
 })
 
 console.log(data.author.name) // comes from `included`
+```
+
+## Meta, links, and the rest of JSON:API
+
+A resource can carry more than attributes and relationships: `meta`, `links`, a client-generated `lid`, and the `meta` and `links` of each relationship. None of that fits the flat shape, so Fetchja keeps it all under a single `$` key:
+
+```js
+const { data } = await api.get('articles/1')
+
+data.title              // an attribute, flat as always
+data.$.meta             // the resource `meta`
+data.$.links.self       // the resource `links`
+data.$.relationships.author.links.related
+data.$.relationships.author.meta
+```
+
+Why `$`? JSON:API forbids `$` in member names, so it can never clash with one of your fields. An attribute named `meta` stays exactly where you expect it (`data.meta`), and the resource's own `meta` is still there, next to it (`data.$.meta`). Resources that carry nothing extra have no `$` at all.
+
+Sending works the same way. Anything you put in `$` is written straight into the resource object:
+
+```js
+await api.create('article', {
+  title: 'Hello world',
+  author: { type: 'people', id: '9' },
+  $: {
+    lid: 'draft-1',
+    meta: { draft: true },
+    relationships: {
+      author: { meta: { role: 'primary' } }
+    }
+  }
+})
+```
+
+The `meta` of a relationship's identifiers lives in the raw linkage, so Fetchja keeps that too, in `$.relationships.<name>.data` — the resolved resource in `data.author` stays shared and untouched:
+
+```js
+data.tags[0].title                          // resolved from `included`
+data.$.relationships.tags.data[0].meta      // the identifier's own `meta`
+```
+
+For the document itself, pass `document` with the request:
+
+```js
+await api.create('article', { title: 'Hello world' }, {
+  document: { meta: { source: 'cli' } }
+})
 ```
 
 ## Query parameters
@@ -262,6 +312,7 @@ try {
     console.log(error.status)     // 404
     console.log(error.statusText) // 'Not Found'
     console.log(error.errors)     // [{ status: '404', detail: 'Not found' }]
+    console.log(error.document)   // the whole error document, with its `meta`
     console.log(error.response)   // the raw Response
   }
 }
@@ -337,6 +388,26 @@ const options: FetchjaOptions = {
 }
 
 const api = new Fetchja(options)
+```
+
+The JSON:API types are exported too, so you can type the `$` envelope and everything inside it:
+
+```ts
+import type {
+  JsonApiDocument,
+  JsonApiLinks,
+  JsonApiMeta,
+  JsonApiRelationship,
+  ResourceEnvelope,
+  ResourceIdentifier
+} from 'fetchja'
+
+interface Article {
+  type: 'articles'
+  id: string
+  title: string
+  $?: ResourceEnvelope
+}
 ```
 
 ## Plurals

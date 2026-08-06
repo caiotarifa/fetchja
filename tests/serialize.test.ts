@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
+import { deserialize } from '../src/deserialize.js'
 import { serialize } from '../src/serialize.js'
 
 function identity (value: string): string {
@@ -13,8 +14,7 @@ test('serializes attributes', () => {
   const json = serialize('post', { title: 'Hi' }, opts)
 
   assert.deepEqual(JSON.parse(json), {
-    data: { type: 'post', attributes: { title: 'Hi' } },
-    included: []
+    data: { type: 'post', attributes: { title: 'Hi' } }
   })
 })
 
@@ -54,7 +54,7 @@ test('clears a to-one relationship with an explicit null id', () => {
 
   assert.deepEqual(data.relationships.logoDocument, { data: null })
   assert.equal(data.attributes, undefined)
-  assert.deepEqual(included, [])
+  assert.equal(included, undefined)
 })
 
 test('clears a to-one relationship without a type', () => {
@@ -147,4 +147,108 @@ test('de-duplicates a resource shared across relationships', () => {
 
   assert.equal(included.length, 1)
   assert.equal(included[0].id, '9')
+})
+
+test('emits $ members next to attributes', () => {
+  const json = serialize(
+    'post',
+    {
+      title: 'Hi',
+      $: {
+        lid: 'tmp-1',
+        meta: { draft: true },
+        links: { self: '/posts/1' }
+      }
+    },
+    opts
+  )
+
+  assert.deepEqual(JSON.parse(json), {
+    data: {
+      type: 'post',
+      lid: 'tmp-1',
+      meta: { draft: true },
+      links: { self: '/posts/1' },
+      attributes: { title: 'Hi' }
+    }
+  })
+})
+
+test('merges $ relationship meta with the derived linkage', () => {
+  const json = serialize(
+    'post',
+    {
+      author: { type: 'users', id: '9' },
+      $: { relationships: { author: { meta: { role: 'primary' } } } }
+    },
+    opts
+  )
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.author, {
+    data: { type: 'users', id: '9' },
+    meta: { role: 'primary' }
+  })
+})
+
+test('$ relationship data replaces the derived linkage', () => {
+  const json = serialize(
+    'post',
+    {
+      tags: [{ type: 'tags', id: '1' }],
+      $: {
+        relationships: {
+          tags: { data: [{ type: 'tags', id: '1', meta: { order: 1 } }] }
+        }
+      }
+    },
+    opts
+  )
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.tags.data, [
+    { type: 'tags', id: '1', meta: { order: 1 } }
+  ])
+})
+
+test('serializes a relationship declared only in $', () => {
+  const json = serialize(
+    'post',
+    { $: { relationships: { comments: { data: [] } } } },
+    opts
+  )
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.comments, { data: [] })
+})
+
+test('sends top-level document members', () => {
+  const json = serialize('post', { title: 'Hi' }, opts, {
+    meta: { source: 'cli' },
+    jsonapi: { version: '1.1' }
+  })
+
+  assert.deepEqual(JSON.parse(json), {
+    meta: { source: 'cli' },
+    jsonapi: { version: '1.1' },
+    data: { type: 'post', attributes: { title: 'Hi' } }
+  })
+})
+
+test('round-trips a deserialized resource', () => {
+  const resource = deserialize({
+    data: {
+      type: 'posts',
+      id: '1',
+      attributes: { title: 'Hi' },
+      meta: { views: 10 }
+    }
+  }).data as Record<string, unknown>
+
+  const json = serialize('posts', resource, opts)
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.meta, { views: 10 })
+  assert.equal(data.attributes.title, 'Hi')
+  assert.equal(data.id, '1')
 })

@@ -87,6 +87,12 @@ test('reads a paginated collection', {
   assert.equal(typeof meta.count, 'number')
   assert.ok((meta.count as number) > 0)
   assert.ok(result.headers)
+
+  // The document links carry pagination.
+  const links = result.links as Record<string, string>
+
+  assert.match(queryOf(links.first ?? ''), /page\[limit]=3/)
+  assert.match(queryOf(links.next ?? ''), /page\[offset]=3/)
 })
 
 test('reads a single resource and flattens it cleanly', {
@@ -108,6 +114,17 @@ test('reads a single resource and flattens it cleanly', {
   assert.equal('attributes' in data, false)
   assert.equal('relationships' in data, false)
   assert.equal('links' in data, false)
+
+  // They are kept under `$` instead: the resource's own links, and the
+  // links of every relationship Kitsu sends without linkage.
+  const envelope = data.$ as Record<string, any>
+
+  assert.match(String(envelope.links.self), /anime\/1$/)
+  assert.match(
+    String(envelope.relationships.categories.links.related),
+    /anime\/1\/categories$/
+  )
+  assert.equal('data' in envelope.relationships.categories, false)
 })
 
 test('filters a collection', {
@@ -167,10 +184,11 @@ test('serializes a complex query and honors it', {
 
   for (const item of data) {
     // The sparse fieldset is respected and flattening is exact: only
-    // the requested attributes survive next to `type` and `id`.
+    // the requested attributes survive next to `type`, `id`, and the
+    // `$` envelope holding the resource's own JSON:API members.
     assert.deepEqual(
       Object.keys(item).sort(),
-      ['averageRating', 'id', 'slug', 'type']
+      ['$', 'averageRating', 'id', 'slug', 'type']
     )
   }
 

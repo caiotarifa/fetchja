@@ -199,3 +199,63 @@ test('typeCase controls the serialized type name', async () => {
   await api.post('blogPost', { title: 'x' })
   assert.match(sent[0] ?? '', /"type":"blog-posts"/)
 })
+
+test('sends top-level document members with the body', async () => {
+  const bodies: string[] = []
+
+  const api = new Fetchja({
+    baseURL: 'https://api.test',
+    fetch: async (_url, init) => {
+      bodies.push(String(init?.body))
+
+      return jsonResponse({ data: { type: 'articles', id: '1' } })
+    }
+  })
+
+  await api.create(
+    'article',
+    { title: 'Hi', $: { meta: { draft: true } } },
+    { document: { meta: { source: 'cli' } } }
+  )
+
+  assert.deepEqual(JSON.parse(bodies[0] ?? ''), {
+    meta: { source: 'cli' },
+    data: {
+      type: 'articles',
+      meta: { draft: true },
+      attributes: { title: 'Hi' }
+    }
+  })
+})
+
+test('exposes the error document on a failed response', async () => {
+  const api = new Fetchja({
+    baseURL: 'https://api.test',
+    fetch: async () => jsonResponse(
+      { errors: [{ detail: 'Nope' }], meta: { requestId: '42' } },
+      422
+    )
+  })
+
+  await assert.rejects(api.get('posts'), (error: FetchjaError) => {
+    assert.deepEqual(error.document?.meta, { requestId: '42' })
+
+    return true
+  })
+})
+
+test('keeps top-level links and jsonapi on the response', async () => {
+  const api = new Fetchja({
+    baseURL: 'https://api.test',
+    fetch: async () => jsonResponse({
+      data: [],
+      links: { next: '/posts?page=2' },
+      jsonapi: { version: '1.1' }
+    })
+  })
+
+  const result = await api.get('posts')
+
+  assert.deepEqual(result.links, { next: '/posts?page=2' })
+  assert.deepEqual(result.jsonapi, { version: '1.1' })
+})
