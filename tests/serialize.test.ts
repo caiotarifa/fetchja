@@ -101,7 +101,46 @@ test('builds to-many relationships and coerces ids to strings', () => {
     { type: 'tags', id: '1' },
     { type: 'tags', id: '2' }
   ])
-  assert.equal(included.length, 2)
+
+  // Bare identifiers say nothing the linkage has not said already.
+  assert.equal(included, undefined)
+})
+
+test('leaves bare identifiers out of included', () => {
+  const json = serialize(
+    'post',
+    {
+      author: { type: 'users', id: '9' },
+      editor: { type: 'users', id: '8', name: 'Bob' },
+      tags: [{ type: 'tags', id: '1' }]
+    },
+    opts
+  )
+  const { data, included } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.author.data, {
+    type: 'users',
+    id: '9'
+  })
+  assert.deepEqual(included, [
+    { type: 'users', id: '8', attributes: { name: 'Bob' } }
+  ])
+})
+
+test('collects a resource sent bare first and in full later', () => {
+  const json = serialize(
+    'post',
+    {
+      author: { type: 'users', id: '9' },
+      reviewer: { type: 'users', id: '9', name: 'Ann' }
+    },
+    opts
+  )
+  const { included } = JSON.parse(json)
+
+  assert.deepEqual(included, [
+    { type: 'users', id: '9', attributes: { name: 'Ann' } }
+  ])
 })
 
 test('included resource type matches the relationship pointer', () => {
@@ -251,4 +290,94 @@ test('round-trips a deserialized resource', () => {
   assert.deepEqual(data.meta, { views: 10 })
   assert.equal(data.attributes.title, 'Hi')
   assert.equal(data.id, '1')
+})
+
+test('round-trips a relationship whose identifier carries meta', () => {
+  const resource = deserialize({
+    data: {
+      type: 'posts',
+      id: '1',
+      relationships: {
+        author: { data: { type: 'users', id: '9', meta: { order: 1 } } },
+        tags: { data: [{ type: 'tags', id: '1', meta: { order: 2 } }] }
+      }
+    }
+  }).data as Record<string, unknown>
+
+  const { data } = JSON.parse(serialize('posts', resource, opts))
+
+  // The identifier `meta` survives, and the flat identifier is never
+  // mistaken for a nested resource missing its `id`.
+  assert.deepEqual(data.relationships.author.data, {
+    type: 'users',
+    id: '9',
+    meta: { order: 1 }
+  })
+  assert.deepEqual(data.relationships.tags.data, [
+    { type: 'tags', id: '1', meta: { order: 2 } }
+  ])
+})
+
+test('keeps a list of plain values as an attribute', () => {
+  const json = serialize(
+    'post',
+    { id: '1', tags: ['a', 'b'], scores: [1, 2] },
+    opts
+  )
+
+  assert.deepEqual(JSON.parse(json), {
+    data: {
+      type: 'post',
+      id: '1',
+      attributes: { tags: ['a', 'b'], scores: [1, 2] }
+    }
+  })
+})
+
+test('omits id for a resource that only has a lid', () => {
+  const json = serialize('post', { $: { lid: 'tmp-1' }, title: 'Hi' }, opts)
+
+  assert.deepEqual(JSON.parse(json), {
+    data: {
+      type: 'post',
+      lid: 'tmp-1',
+      attributes: { title: 'Hi' }
+    }
+  })
+})
+
+test('$ cannot override the resource type and id', () => {
+  const json = serialize(
+    'post',
+    { id: '1', $: { type: 'hacked', id: '999', meta: { ok: true } } },
+    opts
+  )
+
+  assert.deepEqual(JSON.parse(json), {
+    data: { type: 'post', id: '1', meta: { ok: true } }
+  })
+})
+
+test('drops prototype-polluting $ members', () => {
+  const json = serialize(
+    'post',
+    { id: '1', $: JSON.parse('{ "__proto__": { "x": 1 }, "meta": {} }') },
+    opts
+  )
+
+  assert.equal(json.includes('__proto__'), false)
+  assert.equal(({} as Record<string, unknown>).x, undefined)
+})
+
+test('document cannot smuggle its own data or included', () => {
+  const json = serialize('post', { id: '1' }, opts, {
+    data: { type: 'evil' },
+    included: [{ type: 'evil', id: '1' }],
+    meta: { source: 'cli' }
+  })
+
+  assert.deepEqual(JSON.parse(json), {
+    meta: { source: 'cli' },
+    data: { type: 'post', id: '1' }
+  })
 })

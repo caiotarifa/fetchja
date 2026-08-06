@@ -166,3 +166,31 @@ test('keeps the raw linkage when an identifier carries meta', () => {
   assert.equal(result.tags.length, 2)
   assert.deepEqual(result.$.relationships.tags.data[0].meta, { order: 1 })
 })
+
+test('the flat linkage stays a bare identifier', () => {
+  const result = deattribute({
+    type: 'posts',
+    id: '1',
+    relationships: {
+      author: { data: { type: 'users', id: '9', meta: { order: 1 } } },
+      tags: { data: [{ type: 'tags', id: '1', meta: { order: 2 } }] }
+    }
+  }) as Record<string, any>
+
+  // The identifier `meta` lives only in `$`, so the flat value can be
+  // sent straight back without being mistaken for a nested resource.
+  assert.deepEqual(result.author, { type: 'users', id: '9' })
+  assert.deepEqual(result.tags, [{ type: 'tags', id: '1' }])
+  assert.deepEqual(result.$.relationships.author.data.meta, { order: 1 })
+})
+
+test('omits id for a resource that only has a lid', () => {
+  const result = deattribute({
+    type: 'posts',
+    lid: 'tmp-1',
+    attributes: { title: 'Hi' }
+  }) as Record<string, any>
+
+  assert.equal('id' in result, false)
+  assert.deepEqual(result.$, { lid: 'tmp-1' })
+})

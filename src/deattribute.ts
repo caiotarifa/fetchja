@@ -60,6 +60,30 @@ function hasIdentifierMeta (linkage: unknown): boolean {
 }
 
 /**
+ * Strip the `meta` of every identifier in a resource linkage. The flat
+ * value has to stay a bare identifier, so it can be sent back as-is;
+ * the raw linkage keeps the `meta` under `$`.
+ *
+ * @param linkage - The resource linkage to strip.
+ * @returns The linkage, without any identifier `meta`.
+ */
+function withoutIdentifierMeta (linkage: unknown): unknown {
+  if (Array.isArray(linkage)) {
+    return linkage.map(withoutIdentifierMeta)
+  }
+
+  if (!hasIdentifierMeta(linkage)) {
+    return linkage
+  }
+
+  const identifier = { ...linkage as Record<string, unknown> }
+
+  delete identifier.meta
+
+  return identifier
+}
+
+/**
  * Flatten a JSON:API resource (or array of resources) by lifting its
  * `attributes` and `relationships` onto the top level, next to `type`
  * and `id`.
@@ -82,9 +106,15 @@ export function deattribute (
 
   const { type, id, attributes, relationships, ...extra } = data
 
-  const output: Record<string, unknown> = { type, id }
+  const output: Record<string, unknown> = { type }
   const envelope: ResourceEnvelope = { ...extra }
   const envelopeRelationships: Record<string, JsonApiRelationship> = {}
+
+  // A client-generated resource has a `lid` and no `id`, so `id` is only
+  // set when the resource actually has one.
+  if (id !== undefined) {
+    output.id = id
+  }
 
   for (const key in attributes) {
     if (DANGEROUS_KEYS.has(key)) {
@@ -105,11 +135,11 @@ export function deattribute (
       continue
     }
 
-    if ('data' in relation) {
-      output[key] = relation.data
-    }
-
     const { data: linkage, ...rest } = relation
+
+    if ('data' in relation) {
+      output[key] = withoutIdentifierMeta(linkage)
+    }
 
     if (hasIdentifierMeta(linkage)) {
       rest.data = linkage

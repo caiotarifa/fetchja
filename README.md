@@ -131,7 +131,7 @@ response.headers     // the response headers, as a plain object
 
 ## Relationships and included data
 
-To send a relationship, put an object (or a list of objects) with a `type` and an `id` inside your data. Fetchja moves it to the right place and adds the full resource to `included` for you:
+To send a relationship, put an object (or a list of objects) with a `type` and an `id` inside your data. Fetchja moves it to the right place:
 
 ```js
 await api.create('article', {
@@ -141,6 +141,15 @@ await api.create('article', {
     { type: 'tags', id: '1' },
     { type: 'tags', id: '2' }
   ]
+})
+```
+
+An object that is nothing but a `type` and an `id` only links an existing resource, so the request carries no `included` at all. Give it fields and the full resource goes to the top-level `included` too, ready for a server that creates related resources in one request:
+
+```js
+await api.create('article', {
+  title: 'Hello world',
+  author: { type: 'people', id: '9', name: 'Ann' } // also in `included`
 })
 ```
 
@@ -154,7 +163,7 @@ await api.update('article', {
 })
 ```
 
-A plain `author: null` is still an attribute, not a relationship — Fetchja cannot tell the two apart without the object. And an object with **no** `id` key at all still throws, so a forgotten `id` never clears a relationship by accident.
+A plain `author: null` is still an attribute, not a relationship — Fetchja cannot tell the two apart without the object. And an object with **no** `id` key at all still throws, so a forgotten `id` never clears a relationship by accident. A list of plain values (`tags: ['a', 'b']`) stays an attribute; only a list of objects becomes a to-many.
 
 When you read data back, Fetchja takes the resources from `included` and puts them right inside your data. So you can read a relationship like a normal nested object:
 
