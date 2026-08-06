@@ -1,6 +1,6 @@
 {
   "name": "fetchja",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "type": "module",
   "description": "A super simple, modern, lightweight, zero-dependency JSON:API client built on the Fetch API.",
   "author": "Caio Tarifa <caio@yahoo.com>",
@@ -19,7 +19,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --minify --sourcemap --clean",
+    "build": "tsup src/index.ts --format esm --minify --sourcemap --clean && tsc -p tsconfig.build.json",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:integration": "node --import tsx --test tests/integration/*.test.ts",
     "typecheck": "tsc --noEmit",
@@ -30,12 +30,12 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/node": "^25.9.1",
-    "eslint": "^10.4.1",
-    "tsup": "^8.0.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.60.0"
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.8",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0"
   },
   "repository": {
     "type": "git",

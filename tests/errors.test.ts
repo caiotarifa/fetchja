@@ -22,3 +22,17 @@ test('FetchjaError works with no init', () => {
 
   assert.equal(error.status, undefined)
 })
+
+test('FetchjaError carries the whole error document', () => {
+  const error = new FetchjaError('Not Found', {
+    errors: [{ detail: 'Missing', meta: { trace: 'abc' } }],
+    document: {
+      errors: [{ detail: 'Missing' }],
+      meta: { requestId: '42' },
+      links: { self: '/posts/1' }
+    }
+  })
+
+  assert.deepEqual(error.errors?.[0]?.meta, { trace: 'abc' })
+  assert.deepEqual(error.document?.meta, { requestId: '42' })
+})

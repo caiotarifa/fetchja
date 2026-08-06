@@ -1,5 +1,31 @@
 # Changelog
 
+## 3.0.0 — 2026-08-06
+
+Every member [JSON:API 1.1](https://jsonapi.org/format/1.1/) defines now survives a round trip.
+
+### Changes
+
+- **Resource members are preserved under `$`.** `meta`, `links`, `lid`, relationship `meta` and `links`, identifier `meta`, and any extension member are kept on a reserved `$` key instead of being dropped. The spec forbids `$` in member names, so it never clashes with an attribute — a field named `meta` stays flat, and the resource's own `meta` sits in `$.meta`. Resources with nothing extra have no `$`.
+- **`$` is written back out.** Anything under `$` is emitted on the outgoing resource object, so a resource read from the server can be sent back without losing its `meta`, `links`, or `lid`. `type` and `id` are the exception: the resource owns them, and `$` never overrides them.
+- **Top-level `links` and `jsonapi`** are returned next to `data` and `meta`, so pagination links are available.
+- **`document` request option** sends the top-level `meta`, `links`, and `jsonapi` of a request.
+- **`FetchjaError.document`** carries the whole error document, including its `meta` and `links`.
+- **JSON:API types are exported**: `ResourceEnvelope`, `ResourceIdentifier`, `JsonApiRelationship`, `JsonApiLinks`, `JsonApiLink`, `JsonApiMeta`, `JsonApiObject`, `JsonApiDocument`, and `Resource`.
+
+### Fixes
+
+- **Bare identifiers stay out of `included`.** Linking an existing resource (`author: { type: 'people', id: '9' }`) used to sidepost `{ "type": "people", "id": "9" }` — a resource object with no attributes, which says nothing the relationship had not said already and which a server that validates `included` against its schema rejects. Only a related object that carries more than its identifier is collected now.
+- **A list of plain values is an attribute again.** `tags: ['a', 'b']` used to be serialized as a to-many relationship with `"id": "undefined"` identifiers. Only a list of objects becomes a relationship now.
+- **A resource with a `lid` and no `id`** no longer serializes `"id": "undefined"`.
+
+### Breaking changes
+
+- `$` is reserved on resources, in both directions.
+- Request bodies omit `included` when there is nothing to include, instead of sending an empty array.
+- Related objects that are nothing but a `type` and an `id` are no longer added to `included`.
+- A list of plain values is serialized as an attribute, not as a to-many relationship.
+
 ## 2.2.0 — 2026-08-04
 
 ### Fixes

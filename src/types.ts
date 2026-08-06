@@ -1,3 +1,5 @@
+import type { JsonApiDocument } from './jsonapi.js'
+
 /**
  * The options accepted by the {@link Fetchja} constructor.
  */
@@ -61,4 +63,10 @@ export interface RequestOptions {
 
   /** The resource type used to serialize the body. */
   type?: string
+
+  /**
+   * The top-level JSON:API members — `meta`, `links`, `jsonapi` — sent
+   * alongside the request body.
+   */
+  document?: JsonApiDocument
 }

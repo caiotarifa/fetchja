@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "rootDir": "src",
+    "outDir": "dist",
+
+    // Emit declarations in TypeScript 7's deterministic order, so the
+    // eventual upgrade produces no churn in the published `.d.ts`.
+    "stableTypeOrdering": true
+  },
+  "include": ["src"]
+}

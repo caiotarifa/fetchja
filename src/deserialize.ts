@@ -10,13 +10,17 @@ function isObject (value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
+/** The top-level document members passed through to the caller. */
+const DOCUMENT_MEMBERS = ['meta', 'links', 'jsonapi'] as const
+
 /**
  * Deserialize a JSON:API response document into a flat object. Resources
  * found in `included` are resolved (by `type` and `id`) straight into
  * the relationships that reference them.
  *
  * @param response - The JSON:API document to deserialize.
- * @returns The flattened response, with `data` and optional `meta`.
+ * @returns The flattened response, with `data` and the top-level `meta`,
+ *   `links`, and `jsonapi` members the document carried.
  */
 export function deserialize (
   response: Record<string, any>
@@ -27,8 +31,10 @@ export function deserialize (
     output.data = deattribute(response.data)
   }
 
-  if (response.meta) {
-    output.meta = response.meta
+  for (const member of DOCUMENT_MEMBERS) {
+    if (response[member]) {
+      output[member] = response[member]
+    }
   }
 
   if (!Array.isArray(response.included)) {
@@ -75,6 +81,11 @@ export function deserialize (
    */
   function link (entry: Record<string, unknown>): void {
     for (const key in entry) {
+      // `$` holds the raw JSON:API members, which are kept untouched.
+      if (key === '$') {
+        continue
+      }
+
       if (isObject(entry[key])) {
         entry[key] = replace(entry[key])
       }

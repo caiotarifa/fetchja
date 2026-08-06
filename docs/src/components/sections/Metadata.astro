@@ -1,0 +1,52 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import {
+  METADATA_DOCUMENT_CODE,
+  METADATA_READ_CODE,
+  METADATA_WRITE_CODE
+} from '../../lib/content'
+---
+
+<DocSection
+  id="metadata"
+  kicker="Meta & links"
+  title="Flat where it helps. Complete where it counts."
+>
+  <Fragment slot="lede">
+    A resource carries more than attributes: <InlineCode>meta</InlineCode>,
+    <InlineCode>links</InlineCode>, a client-generated
+    <InlineCode>lid</InlineCode>, and the <InlineCode>meta</InlineCode> and
+    <InlineCode>links</InlineCode> of every relationship. None of it fits the
+    flat shape, so Fetchja keeps all of it under a single
+    <InlineCode>$</InlineCode> key.
+  </Fragment>
+
+  <CodeBlock code={METADATA_READ_CODE} filename="read-metadata.ts" />
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    JSON:API forbids <InlineCode>$</InlineCode> in member names, so it can
+    never clash with one of your fields. An attribute named
+    <InlineCode>meta</InlineCode> stays exactly where you expect it, and the
+    resource's own <InlineCode>meta</InlineCode> sits right next to it.
+    Resources that carry nothing extra have no <InlineCode>$</InlineCode> at
+    all.
+  </p>
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    Writing works the same way. Whatever you put in
+    <InlineCode>$</InlineCode> is written straight into the outgoing resource
+    object, so a resource read from the server can be sent back without
+    losing anything.
+  </p>
+
+  <CodeBlock code={METADATA_WRITE_CODE} filename="write-metadata.ts" />
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    For the document itself, pass <InlineCode>document</InlineCode> with the
+    request.
+  </p>
+
+  <CodeBlock code={METADATA_DOCUMENT_CODE} filename="document-members.ts" />
+</DocSection>

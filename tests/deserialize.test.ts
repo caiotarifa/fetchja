@@ -135,3 +135,111 @@ test('leaves an unknown reference as a bare identifier', () => {
 
   assert.deepEqual(data.author, { type: 'users', id: '404' })
 })
+
+test('passes top-level links and jsonapi through', () => {
+  const result = deserialize({
+    data: [],
+    links: { self: '/posts?page=1', next: '/posts?page=2' },
+    jsonapi: { version: '1.1', ext: [], meta: { host: 'a' } }
+  })
+
+  assert.deepEqual(result.links, {
+    self: '/posts?page=1',
+    next: '/posts?page=2'
+  })
+  assert.equal((result.jsonapi as Record<string, unknown>).version, '1.1')
+})
+
+test('keeps relationship links and meta while resolving included', () => {
+  const result = deserialize({
+    data: {
+      type: 'posts',
+      id: '1',
+      relationships: {
+        author: {
+          data: { type: 'users', id: '9' },
+          links: { related: '/posts/1/author' },
+          meta: { role: 'primary' }
+        }
+      }
+    },
+    included: [
+      { type: 'users', id: '9', attributes: { name: 'Ann' } }
+    ]
+  })
+  const data = result.data as Record<string, any>
+
+  assert.equal(data.author.name, 'Ann')
+  assert.deepEqual(data.$.relationships.author, {
+    links: { related: '/posts/1/author' },
+    meta: { role: 'primary' }
+  })
+})
+
+test('an included resource carries its own $', () => {
+  const result = deserialize({
+    data: {
+      type: 'posts',
+      id: '1',
+      relationships: { author: { data: { type: 'users', id: '9' } } }
+    },
+    included: [
+      {
+        type: 'users',
+        id: '9',
+        attributes: { name: 'Ann' },
+        meta: { verified: true }
+      }
+    ]
+  })
+  const data = result.data as Record<string, any>
+
+  assert.deepEqual(data.author.$.meta, { verified: true })
+})
+
+test('identifier meta does not leak into the shared resource', () => {
+  const result = deserialize({
+    data: [
+      {
+        type: 'posts',
+        id: '1',
+        relationships: {
+          author: { data: { type: 'users', id: '9', meta: { order: 1 } } }
+        }
+      },
+      {
+        type: 'posts',
+        id: '2',
+        relationships: {
+          author: { data: { type: 'users', id: '9', meta: { order: 2 } } }
+        }
+      }
+    ],
+    included: [
+      { type: 'users', id: '9', attributes: { name: 'Ann' } }
+    ]
+  })
+  const [first, second] = result.data as Record<string, any>[]
+
+  assert.equal(first?.author, second?.author)
+  assert.equal(Object.hasOwn(first?.author, 'meta'), false)
+  assert.deepEqual(first?.$.relationships.author.data.meta, { order: 1 })
+  assert.deepEqual(second?.$.relationships.author.data.meta, { order: 2 })
+})
+
+test('leaves the $ envelope untouched while linking', () => {
+  const result = deserialize({
+    data: {
+      type: 'posts',
+      id: '1',
+      meta: { type: 'users', id: '9' },
+      relationships: { author: { data: { type: 'users', id: '9' } } }
+    },
+    included: [
+      { type: 'users', id: '9', attributes: { name: 'Ann' } }
+    ]
+  })
+  const data = result.data as Record<string, any>
+
+  assert.deepEqual(data.$.meta, { type: 'users', id: '9' })
+})

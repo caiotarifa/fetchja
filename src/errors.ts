@@ -1,9 +1,14 @@
+import type { JsonApiLinks, JsonApiMeta } from './jsonapi.js'
+
 /**
  * A single error object as defined by the JSON:API specification.
  *
  * @see https://jsonapi.org/format/#error-objects
  */
 export interface JsonApiError {
+  /** A unique identifier for this occurrence of the problem. */
+  id?: string
+
   /** The HTTP status code, as a string. */
   status?: string
 
@@ -17,7 +22,24 @@ export interface JsonApiError {
   detail?: string
 
   /** References to the source of the error. */
-  source?: Record<string, unknown>
+  source?: {
+    /** A JSON Pointer to the value in the request document. */
+    pointer?: string
+
+    /** The query parameter that caused the error. */
+    parameter?: string
+
+    /** The request header that caused the error. */
+    header?: string
+
+    [key: string]: unknown
+  }
+
+  /** The error links, such as `about` and `type`. */
+  links?: JsonApiLinks
+
+  /** Non-standard information about the error. */
+  meta?: JsonApiMeta
 
   [key: string]: unknown
 }
@@ -34,6 +56,9 @@ export interface FetchjaErrorInit {
 
   /** The JSON:API error objects returned by the server. */
   errors?: JsonApiError[]
+
+  /** The whole error document, with its `meta`, `links`, and `jsonapi`. */
+  document?: Record<string, unknown>
 
   /** The raw failed response. */
   response?: Response
@@ -53,6 +78,9 @@ export class FetchjaError extends Error {
   /** The JSON:API error objects returned by the server. */
   errors?: JsonApiError[]
 
+  /** The whole error document, with its `meta`, `links`, and `jsonapi`. */
+  document?: Record<string, unknown>
+
   /** The raw failed response. */
   response?: Response
 
@@ -67,6 +95,7 @@ export class FetchjaError extends Error {
     this.status = init.status
     this.statusText = init.statusText
     this.errors = init.errors
+    this.document = init.document
     this.response = init.response
   }
 }
