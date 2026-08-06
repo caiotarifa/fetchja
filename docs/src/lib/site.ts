@@ -8,7 +8,7 @@ export const SITE = {
       'and keeps application code close to plain objects.'
     ].join(' '),
   url: 'https://fetchja.dev',
-  version: '2.1.0',
+  version: '3.0.0',
   repo: 'https://github.com/caiotarifa/fetchja',
   npm: 'https://www.npmjs.com/package/fetchja',
   issues: 'https://github.com/caiotarifa/fetchja/issues',
