@@ -84,9 +84,98 @@ test('clears a to-one relationship on a nested resource', () => {
 
 test('throws FetchjaError when included resource lacks an id', () => {
   assert.throws(
-    () => serialize('post', { author: { name: 'Ann' } }, opts),
+    () => serialize('post', { author: { type: 'users', name: 'Ann' } }, opts),
     /must have an ID/
   )
+})
+
+test('keeps an object with no identifier members as an attribute', () => {
+  const json = serialize(
+    'post',
+    { title: 'Hi', metadata: { locale: 'en', draft: true } },
+    opts
+  )
+
+  assert.deepEqual(JSON.parse(json), {
+    data: {
+      type: 'post',
+      attributes: {
+        title: 'Hi',
+        metadata: { locale: 'en', draft: true }
+      }
+    }
+  })
+})
+
+test('keeps a list of plain objects as an attribute', () => {
+  const json = serialize(
+    'post',
+    { steps: [{ order: 1 }, { order: 2 }] },
+    opts
+  )
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.attributes.steps, [{ order: 1 }, { order: 2 }])
+  assert.equal(data.relationships, undefined)
+})
+
+test('a single identifier member marks a list as a relationship', () => {
+  assert.throws(
+    () => serialize(
+      'post',
+      { comments: [{ type: 'comments' }, { body: 'Hi' }] },
+      opts
+    ),
+    /must have an ID/
+  )
+})
+
+test('sideposts a new resource through its lid', () => {
+  const json = serialize(
+    'post',
+    {
+      title: 'Hi',
+      comments: [{ type: 'comments', lid: 'c-1', body: 'First' }]
+    },
+    opts
+  )
+  const { data, included } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.comments.data, [
+    { type: 'comments', lid: 'c-1' }
+  ])
+  assert.deepEqual(included, [
+    { type: 'comments', lid: 'c-1', attributes: { body: 'First' } }
+  ])
+})
+
+test('sideposts a to-one resource through its lid', () => {
+  const json = serialize(
+    'post',
+    { author: { lid: 'u-1', name: 'Ann' } },
+    opts
+  )
+  const { data, included } = JSON.parse(json)
+
+  assert.deepEqual(data.relationships.author.data, {
+    type: 'author',
+    lid: 'u-1'
+  })
+  assert.deepEqual(included, [
+    { type: 'author', lid: 'u-1', attributes: { name: 'Ann' } }
+  ])
+})
+
+test('de-duplicates sideposted resources by lid', () => {
+  const comment = { type: 'comments', lid: 'c-1', body: 'First' }
+  const json = serialize(
+    'post',
+    { comments: [comment], pinned: comment },
+    opts
+  )
+  const { included } = JSON.parse(json)
+
+  assert.equal(included.length, 1)
 })
 
 test('builds to-many relationships and coerces ids to strings', () => {
@@ -248,6 +337,23 @@ test('$ relationship data replaces the derived linkage', () => {
   assert.deepEqual(data.relationships.tags.data, [
     { type: 'tags', id: '1', meta: { order: 1 } }
   ])
+})
+
+test('merges $ attributes with the flat ones', () => {
+  const json = serialize(
+    'post',
+    {
+      title: 'Hi',
+      $: { attributes: { title: 'Override', extra: true } }
+    },
+    opts
+  )
+  const { data } = JSON.parse(json)
+
+  assert.deepEqual(data.attributes, {
+    title: 'Override',
+    extra: true
+  })
 })
 
 test('serializes a relationship declared only in $', () => {
