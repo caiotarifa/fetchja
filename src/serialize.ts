@@ -43,10 +43,24 @@ function isPlainObject (
 }
 
 /**
+ * Check whether an object means to be a relationship: any identifier
+ * member marks the intent. An object carrying none of them is a plain
+ * JSON attribute.
+ *
+ * @param value - The object to check.
+ * @returns `true` when the object carries an identifier member.
+ */
+function isRelationshipObject (
+  value: Record<string, unknown>
+): boolean {
+  return 'type' in value || 'id' in value || 'lid' in value
+}
+
+/**
  * Serialize a plain object into a JSON:API request document. Nested
- * objects with an `id` become relationships, and the full resources are
- * collected into the top-level `included` array. A `$` key holds the
- * JSON:API members that have no place in the flat shape.
+ * objects with an identifier member become relationships, and the full
+ * resources are collected into the top-level `included` array. A `$`
+ * key holds the JSON:API members that have no place in the flat shape.
  *
  * @param type - The resource type of the root object.
  * @param input - The plain object to serialize.
@@ -100,10 +114,19 @@ export function serialize (
     resource: Record<string, unknown>,
     fallbackType: string
   ): Record<string, unknown> {
-    return {
-      type: resourceType(resource, fallbackType),
-      id: String(resource.id)
+    const identifier: Record<string, unknown> = {
+      type: resourceType(resource, fallbackType)
     }
+
+    // A resource created client-side has no `id` yet; its `lid` links
+    // the identifier to the full resource in `included`.
+    if (resource.id != null) {
+      identifier.id = String(resource.id)
+    } else {
+      identifier.lid = String(resource.lid)
+    }
+
+    return identifier
   }
 
   /**
@@ -122,7 +145,7 @@ export function serialize (
       return
     }
 
-    if (resource.id == null) {
+    if (resource.id == null && resource.lid == null) {
       throw new FetchjaError('All included resources must have an ID.')
     }
 
@@ -139,7 +162,9 @@ export function serialize (
       return
     }
 
-    const key = `${resource.type ?? fallbackType}:${resource.id}`
+    const key = resource.id != null
+      ? `${resource.type ?? fallbackType}:id:${resource.id}`
+      : `${resource.type ?? fallbackType}:lid:${resource.lid}`
 
     if (includedKeys.has(key)) {
       return
@@ -172,11 +197,11 @@ export function serialize (
         continue
       }
 
-      if (key === 'id') {
-        // A client-generated resource carries a `lid` instead, so a
-        // missing `id` must not become the string `"undefined"`.
-        if (node.id != null) {
-          data.id = String(node.id)
+      if (key === 'id' || key === 'lid') {
+        // A missing value must not become the string `"undefined"`: a
+        // client-generated resource carries only one of the two.
+        if (node[key] != null) {
+          data[key] = String(node[key])
         }
 
         continue
@@ -185,10 +210,17 @@ export function serialize (
       const value = node[key]
 
       if (Array.isArray(value)) {
-        // Only a list of objects is a to-many relationship. A list of
-        // plain values is an attribute, which JSON:API allows. An empty
-        // list still clears the relationship.
-        if (value.length > 0 && !value.every(isPlainObject)) {
+        // Only a list of objects carrying identifier members is a
+        // to-many relationship. A list of plain values or of plain JSON
+        // objects is an attribute, which JSON:API allows. An empty list
+        // still clears the relationship.
+        if (
+          value.length > 0 &&
+          (
+            !value.every(isPlainObject) ||
+            !value.some(isRelationshipObject)
+          )
+        ) {
           attributes[key] = value
 
           continue
@@ -206,8 +238,17 @@ export function serialize (
       }
 
       if (isPlainObject(value)) {
-        // An explicit `id: null` clears a to-one relationship. A missing
-        // `id` keeps throwing, so a forgotten key stays a loud error.
+        // An object with no identifier member at all is a plain JSON
+        // attribute. One with a `type` or `lid` but a forgotten `id`
+        // keeps throwing, so a half-written relationship stays a loud
+        // error.
+        if (!isRelationshipObject(value)) {
+          attributes[key] = value
+
+          continue
+        }
+
+        // An explicit `id: null` clears a to-one relationship.
         if (value.id === null) {
           relationships[key] = { data: null }
 
@@ -231,7 +272,13 @@ export function serialize (
     let resource = data
 
     if (isPlainObject(envelope)) {
-      const { relationships: rawRelationships, ...members } = envelope
+      const {
+        attributes: rawAttributes,
+        relationships: rawRelationships,
+        ...members
+      } = envelope
+      const envelopeAttributes = rawAttributes as
+        Record<string, unknown> | undefined
       const envelopeRelationships = rawRelationships as
         Record<string, unknown> | undefined
 
@@ -247,6 +294,17 @@ export function serialize (
         }
 
         resource[key] = members[key]
+      }
+
+      // Envelope members merge per key over the derived ones, the same
+      // way `relationships` below does, instead of replacing the whole
+      // `attributes` object.
+      for (const key in envelopeAttributes) {
+        if (DANGEROUS_KEYS.has(key)) {
+          continue
+        }
+
+        attributes[key] = envelopeAttributes[key]
       }
 
       for (const key in envelopeRelationships) {

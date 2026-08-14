@@ -163,7 +163,7 @@ await api.update('article', {
 })
 ```
 
-A plain `author: null` is still an attribute, not a relationship — Fetchja cannot tell the two apart without the object. And an object with **no** `id` key at all still throws, so a forgotten `id` never clears a relationship by accident. A list of plain values (`tags: ['a', 'b']`) stays an attribute; only a list of objects becomes a to-many.
+A plain `author: null` is still an attribute, not a relationship — Fetchja cannot tell the two apart without the object. An object (or a list of objects) with **no** identifier member at all — no `type`, `id`, or `lid` — is a plain JSON attribute and goes under `attributes` as it is, so a JSON column like `metadata: { locale: 'en' }` just works. But an object that carries a `type` and forgets its `id` still throws, so a half-written relationship never clears one by accident. A list of plain values (`tags: ['a', 'b']`) stays an attribute too.
 
 When you read data back, Fetchja takes the resources from `included` and puts them right inside your data. So you can read a relationship like a normal nested object:
 
