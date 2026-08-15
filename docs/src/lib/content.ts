@@ -6,6 +6,7 @@ export const NAV_LINKS = [
   { href: '#methods', label: 'methods' },
   { href: '#metadata', label: 'meta & links' },
   { href: '#query', label: 'query' },
+  { href: '#extensions', label: 'extensions' },
   { href: '#typescript', label: 'typescript' }
 ] as const
 
@@ -395,6 +396,53 @@ export const RETRY_CODE = `const api = new Fetchja({
     }
   }
 })`
+
+export const ATOMIC_CODE = `import Fetchja from 'fetchja'
+import { AtomicOperations } from 'fetchja/atomic'
+
+const api = new Fetchja({
+  baseURL: 'https://api.example.com',
+  extensions: [AtomicOperations]
+})
+
+const { results } = await api.atomic(op => [
+  op.add('author', { lid: 'a1', name: 'dgeb' }),
+  op.add('article', {
+    title: 'JSON API paints my bikeshed!',
+    author: { type: 'authors', lid: 'a1' }
+  }),
+  op.update('article', { id: '13', title: 'To TDD or Not' }),
+  op.remove('article', '9')
+])
+
+results
+// [{ type: 'authors', id: '9', name: 'dgeb' }, ...]`
+
+export const ATOMIC_RELATIONSHIP_CODE = `const author = {
+  type: 'articles',
+  id: '13',
+  relationship: 'author'
+}
+
+await api.atomic(op => [
+  op.update(author, { type: 'people', id: '9' }),
+  op.update(author, null)
+])`
+
+export const EXTENSION_CODE = `const timing = {
+  name: 'timing',
+
+  methods: api => ({
+    ping: () => api.get('health')
+  }),
+
+  onRequest: context => {
+    context.headers['X-Sent-At'] = String(Date.now())
+  },
+
+  onResponse: (payload, response) => payload,
+  onError: error => console.warn(error.status)
+}`
 
 export const TANSTACK_QUERY_CODE = `import {
   useQuery

@@ -1,3 +1,6 @@
+// The docs always show the version the package itself is on.
+import { version } from '../../../package.json'
+
 export const SITE = {
   name: 'Fetchja',
   tagline: 'A tiny JSON:API client built on Fetch',
@@ -8,7 +11,7 @@ export const SITE = {
       'and keeps application code close to plain objects.'
     ].join(' '),
   url: 'https://fetchja.dev',
-  version: '3.0.0',
+  version,
   repo: 'https://github.com/caiotarifa/fetchja',
   npm: 'https://www.npmjs.com/package/fetchja',
   issues: 'https://github.com/caiotarifa/fetchja/issues',

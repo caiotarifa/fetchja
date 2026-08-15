@@ -1,6 +1,6 @@
 {
   "name": "fetchja",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "type": "module",
   "description": "A super simple, modern, lightweight, zero-dependency JSON:API client built on the Fetch API.",
   "author": "Caio Tarifa <caio@yahoo.com>",
@@ -16,10 +16,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./atomic": {
+      "types": "./dist/atomic.d.ts",
+      "import": "./dist/atomic.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --minify --sourcemap --clean && tsc -p tsconfig.build.json",
+    "build": "tsup src/index.ts src/atomic.ts --format esm --minify --sourcemap --clean && tsc -p tsconfig.build.json",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:integration": "node --import tsx --test tests/integration/*.test.ts",
     "typecheck": "tsc --noEmit",

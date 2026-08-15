@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { deserialize } from '../src/deserialize.js'
-import { serialize } from '../src/serialize.js'
+import { serialize, serializeResource } from '../src/serialize.js'
 
 function identity (value: string): string {
   return value
@@ -485,5 +485,39 @@ test('document cannot smuggle its own data or included', () => {
   assert.deepEqual(JSON.parse(json), {
     meta: { source: 'cli' },
     data: { type: 'post', id: '1' }
+  })
+})
+
+test('serializeResource returns the parts, not a document', () => {
+  const { data, included } = serializeResource(
+    'post',
+    { title: 'Hi' },
+    opts
+  )
+
+  assert.deepEqual(data, {
+    type: 'post',
+    attributes: { title: 'Hi' }
+  })
+
+  assert.deepEqual(included, [])
+})
+
+test('serializeResource hands the caller what it pulled along', () => {
+  const { data, included } = serializeResource(
+    'post',
+    { author: { type: 'users', id: '9', name: 'Ann' } },
+    opts
+  )
+
+  assert.deepEqual(data.relationships, {
+    author: { data: { type: 'users', id: '9' } }
+  })
+
+  assert.equal(included.length, 1)
+  assert.deepEqual(included[0], {
+    type: 'users',
+    id: '9',
+    attributes: { name: 'Ann' }
   })
 })

@@ -28,6 +28,9 @@ const { data } = await api.get('articles')
 - [Custom fetch](#custom-fetch)
 - [Errors](#errors)
 - [Retry on error](#retry-on-error)
+- [Extensions](#extensions)
+- [Atomic Operations](#atomic-operations)
+- [Write your own extension](#write-your-own-extension)
 - [Use with TanStack Query](#use-with-tanstack-query)
 - [TypeScript](#typescript)
 - [Plurals](#plurals)
@@ -346,6 +349,160 @@ const api = new Fetchja({
 ```
 
 Return a `Response` (like the one from `replayRequest()`) to keep going. Return nothing, and Fetchja throws the `FetchjaError`.
+
+## Extensions
+
+JSON:API has [extensions](https://jsonapi.org/format/#extensions): named add-ons that put extra members in a document. Fetchja ships the official ones as separate imports, so you only pay for the one you use. Register them with the `extensions` option:
+
+```js
+import Fetchja from 'fetchja'
+import { AtomicOperations } from 'fetchja/atomic'
+
+const api = new Fetchja({
+  baseURL: 'https://api.example.com',
+  extensions: [AtomicOperations]
+})
+```
+
+Pass an extension bare, or call it to configure it:
+
+```js
+extensions: [AtomicOperations({ endpoint: 'bulk' })]
+```
+
+An extension can add methods to the client, rewrite a request before it goes out, and read the response before you see it. Everything else keeps working exactly as it did.
+
+## Atomic Operations
+
+[Atomic Operations](https://jsonapi.org/ext/atomic/) sends an ordered, all-or-nothing batch of writes to a single endpoint. Either every operation lands, or none of them do.
+
+`api.atomic()` takes a callback. It hands you a builder, and you return the operations:
+
+```js
+import { AtomicOperations } from 'fetchja/atomic'
+
+const api = new Fetchja({
+  baseURL: 'https://api.example.com',
+  extensions: [AtomicOperations]
+})
+
+const { results } = await api.atomic(op => [
+  op.add('author', { lid: 'a1', name: 'dgeb' }),
+  op.add('article', {
+    title: 'JSON API paints my bikeshed!',
+    author: { type: 'authors', lid: 'a1' }
+  }),
+  op.update('article', { id: '13', title: 'To TDD or Not' }),
+  op.remove('article', '9')
+])
+```
+
+That posts to `/operations` with `Accept` and `Content-Type` set to `application/vnd.api+json;ext="https://jsonapi.org/ext/atomic"`. Only this request carries them, so the rest of your calls stay plain JSON:API.
+
+The builder has three verbs and an escape hatch:
+
+```js
+op.add('article', { title: 'Hello' })              // create
+op.update('article', { id: '13', title: 'Hi' })    // update, `id` goes in the body
+op.remove('article', '13')                         // delete
+op.raw({ op: 'add', href: '/anything', data })     // sent untouched
+```
+
+Each one takes a last `options` argument of `{ href, meta }`. `href` targets an endpoint of the server's choosing, and it cannot be combined with a `ref`.
+
+### Relationships
+
+Give a `ref` object instead of a model name to target a relationship:
+
+```js
+const author = { type: 'articles', id: '13', relationship: 'author' }
+const comments = { type: 'articles', id: '1', relationship: 'comments' }
+
+await api.atomic(op => [
+  op.update(author, { type: 'people', id: '9' }),           // set a to-one
+  op.update(author, null),                                  // clear it
+  op.add(comments, [{ type: 'comments', id: '123' }]),      // add members
+  op.remove(comments, [{ type: 'comments', id: '12' }])     // drop members
+])
+```
+
+A `ref` is passed through as written, so its `type` is the one that goes on the wire. A model name (`'article'`) gets the usual casing and pluralization.
+
+### Linking new resources
+
+An operation can name a resource that does not exist yet. Give it a `lid`, then point at that same `lid` from anywhere in the batch:
+
+```js
+await api.atomic(op => [
+  op.add('author', { lid: 'a1', name: 'dgeb' }),
+  op.add('article', { title: 'Hello', author: { type: 'authors', lid: 'a1' } })
+])
+```
+
+An operation cannot sidepost. Nesting a whole related resource inside another one throws, because an operation has nowhere to put it. Give the related resource its own `add` and link the two by `lid`, as above.
+
+### The response
+
+`results` is positional: one entry per operation, in the order you sent them. An operation the server answers without data gives `null`:
+
+```js
+const { results, meta, status } = await api.atomic(op => [
+  op.add('author', { name: 'dgeb' }),
+  op.remove('author', '8')
+])
+
+results // [{ type: 'authors', id: '9', name: 'dgeb' }, null]
+```
+
+You also get `document` (the untouched response document), `links`, `jsonapi`, `statusText`, and `headers`. A `204 No Content` gives you `results: []`.
+
+A failed batch is an ordinary `FetchjaError`, and the server points at the operation that broke it:
+
+```js
+error.errors[0].source.pointer // '/atomic:operations/1/data/attributes/title'
+```
+
+In TypeScript, importing `fetchja/atomic` types `atomic` on every `Fetchja` instance, including ones built without the extension. Calling it there is a plain `TypeError`.
+
+## Write your own extension
+
+An extension is an object with a `name` and whatever else it needs:
+
+```js
+const timing = {
+  name: 'timing',
+
+  methods: (api) => ({
+    ping: () => api.get('health')
+  }),
+
+  onRequest: (context) => {
+    context.headers['X-Sent-At'] = String(Date.now())
+    context.url.searchParams.set('traced', '1')
+  },
+
+  onResponse: (payload, response) => {
+    // return an object to replace the payload
+  },
+
+  onError: (error) => {
+    console.warn(error.status)
+  }
+}
+```
+
+Hooks run in registration order. `methods` are installed on the instance, and an extension that tries to overwrite a built-in one (`get`, `request`, …) throws instead.
+
+If your extension speaks a media type of its own, `jsonApiMediaType` builds it:
+
+```js
+import { jsonApiMediaType } from 'fetchja'
+
+jsonApiMediaType({ ext: ['https://jsonapi.org/ext/atomic'] })
+// -> 'application/vnd.api+json;ext="https://jsonapi.org/ext/atomic"'
+```
+
+Fetchja never adds those parameters to your everyday requests. Set them on the requests your extension makes, so a server that has never heard of it keeps answering the rest.
 
 ## Use with TanStack Query
 

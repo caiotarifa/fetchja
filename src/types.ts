@@ -1,3 +1,4 @@
+import type { ExtensionInput } from './extensions.js'
 import type { JsonApiDocument } from './jsonapi.js'
 
 /**
@@ -36,6 +37,13 @@ export interface FetchjaOptions {
   onResponseError?: (
     response: Response & { replayRequest: () => Promise<Response> }
   ) => Response | void | Promise<Response | void>
+
+  /**
+   * The JSON:API extensions to register. Each may be an extension or a
+   * factory for one, so both `[AtomicOperations]` and
+   * `[AtomicOperations({ ... })]` work.
+   */
+  extensions?: ExtensionInput[]
 }
 
 /**
@@ -58,8 +66,11 @@ export interface RequestOptions {
   /** The query parameters to serialize. */
   params?: unknown
 
-  /** The request body to serialize. */
-  body?: Record<string, unknown>
+  /**
+   * The request body to serialize. A string is sent as it is, for an
+   * extension that builds a document the flat shape cannot describe.
+   */
+  body?: Record<string, unknown> | string
 
   /** The resource type used to serialize the body. */
   type?: string
@@ -69,4 +80,10 @@ export interface RequestOptions {
    * alongside the request body.
    */
   document?: JsonApiDocument
+
+  /**
+   * Return the response document as it came, instead of flattening it.
+   * An extension defines members the flat shape knows nothing about.
+   */
+  raw?: boolean
 }

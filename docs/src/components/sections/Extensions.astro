@@ -1,0 +1,95 @@
+---
+import DocSection from '../common/DocSection.astro'
+import CodeBlock from '../ui/CodeBlock.astro'
+import InlineCode from '../ui/InlineCode.astro'
+import {
+  ATOMIC_CODE,
+  ATOMIC_RELATIONSHIP_CODE,
+  EXTENSION_CODE
+} from '../../lib/content'
+---
+
+<DocSection
+  id="extensions"
+  kicker="Extensions"
+  title="The spec keeps going. So does Fetchja."
+>
+  <Fragment slot="lede">
+    The <InlineCode>extensions</InlineCode> option registers JSON:API extensions.
+    The first official one is
+    <a
+      class="text-accent underline underline-offset-4"
+      href="https://jsonapi.org/ext/atomic/"
+      target="_blank"
+      rel="noopener"
+    >
+      Atomic Operations
+    </a>: an ordered, all-or-nothing batch of writes sent to a single endpoint.
+  </Fragment>
+
+  <CodeBlock code={ATOMIC_CODE} filename="atomic.ts" />
+
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    The batch is posted to <InlineCode>operations</InlineCode>, and only that
+    request carries the extension media type. Operations are built with
+    <InlineCode>add</InlineCode>, <InlineCode>update</InlineCode>,
+    <InlineCode>remove</InlineCode>, and <InlineCode>raw</InlineCode>. A
+    <InlineCode>lid</InlineCode> links resources that do not exist yet.
+    <InlineCode>results</InlineCode> comes back positional — one entry per
+    operation, in the order you sent them.
+  </p>
+
+  <h3
+    class="mt-11 mb-3.5 flex items-center gap-3 text-[21px] font-semibold
+      tracking-normal text-text"
+  >
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Target a relationship
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    Pass a <InlineCode>ref</InlineCode> object instead of a model name to write
+    a relationship directly. <InlineCode>null</InlineCode> clears a to-one, and
+    an array adds or drops to-many members.
+  </p>
+
+  <CodeBlock code={ATOMIC_RELATIONSHIP_CODE} filename="relationship.ts" />
+
+  <h3
+    class="mt-11 mb-3.5 flex items-center gap-3 text-[21px] font-semibold
+      tracking-normal text-text"
+  >
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Write your own
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    An extension is a plain object. It installs methods on the client and hooks
+    into every request, response, and error, in registration order.
+  </p>
+
+  <CodeBlock code={EXTENSION_CODE} filename="extension.ts" />
+
+  <aside
+    class="mb-6 flex gap-3.5 rounded-xl border border-accent/25 bg-accent/10
+      px-5 py-4"
+  >
+    <span class="mt-0.5 shrink-0 text-accent">
+      <svg
+        class="size-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4M12 8h.01" />
+      </svg>
+    </span>
+    <p class="m-0 text-[15px] text-text">
+      Extension media types are never added to your everyday requests. A server
+      that has never heard of the extension keeps answering the rest.
+    </p>
+  </aside>
+</DocSection>

@@ -5,10 +5,13 @@ import { normalizePath, splitModel, type ModelOptions } from './model.js'
 import { camelCase, kebabCase, snakeCase } from './case.js'
 import { pluralize as defaultPluralize } from './pluralize.js'
 import { FetchjaError } from './errors.js'
+import {
+  JSON_API_MEDIA_TYPE,
+  resolveExtensions,
+  type Extension,
+  type RequestContext
+} from './extensions.js'
 import type { FetchjaOptions, RequestOptions } from './types.js'
-
-/** The media type required by the JSON:API specification. */
-const JSON_API_MEDIA_TYPE = 'application/vnd.api+json'
 
 /**
  * Return the given string unchanged. Used as the default transform when
@@ -86,7 +89,7 @@ function collectHeaders (response: Response): Record<string, string> {
 /**
  * A super simple, lightweight JSON:API client built on the Fetch API.
  */
-export default class Fetchja {
+export class Fetchja {
   /** The base URL prepended to every request. */
   baseURL?: string
 
@@ -107,6 +110,9 @@ export default class Fetchja {
 
   /** Interceptor invoked on a non-OK response, before throwing. */
   onResponseError: FetchjaOptions['onResponseError']
+
+  /** The registered extensions, in the order they were given. */
+  readonly extensions: Extension[]
 
   /** The custom fetch implementation, when provided. */
   readonly #fetch?: typeof fetch
@@ -155,6 +161,30 @@ export default class Fetchja {
     this.create = this.post
     this.update = this.patch
     this.remove = this.delete
+
+    this.extensions = resolveExtensions(options.extensions ?? [])
+
+    for (const extension of this.extensions) {
+      const methods = extension.methods?.(this) ?? {}
+
+      for (const name in methods) {
+        // An extension that shadows `get` or `request` would break the
+        // client from the inside, so a collision is a hard error rather
+        // than a last-one-wins.
+        if (name in this) {
+          throw new FetchjaError(
+            `The extension "${extension.name}" cannot override ` +
+            `\`${name}\`.`
+          )
+        }
+
+        Object.defineProperty(this, name, {
+          value: methods[name],
+          writable: true,
+          configurable: true
+        })
+      }
+    }
   }
 
   /** The transforms shared by the path-building helpers. */
@@ -196,15 +226,33 @@ export default class Fetchja {
       url.search = String(this.queryFormatter(options.params))
     }
 
-    const body = options.body !== undefined && options.type !== undefined
-      ? serialize(options.type, options.body, {
-          caseType: this.typeCase,
-          pluralTypes: this.pluralize
-        }, options.document)
-      : undefined
+    const context: RequestContext = {
+      options,
+      url,
+      headers: { ...this.headers, ...options.headers }
+    }
+
+    for (const extension of this.extensions) {
+      await extension.onRequest?.(context, this)
+    }
+
+    let body: string | undefined
+
+    if (typeof options.body === 'string') {
+      // An extension that builds a document the flat shape cannot
+      // describe passes it through already serialized.
+      body = options.body
+    } else if (
+      options.body !== undefined &&
+      options.type !== undefined
+    ) {
+      body = serialize(options.type, options.body, {
+        caseType: this.typeCase,
+        pluralTypes: this.pluralize
+      }, options.document)
+    }
 
     const requestFetch = this.#fetch ?? fetch
-    const baseHeaders = this.headers
 
     /**
      * Send the request. Defined as a closure so it can be replayed by
@@ -213,18 +261,13 @@ export default class Fetchja {
      * @returns The raw response.
      */
     function sendRequest (): Promise<Response> {
-      const headers = new Headers({
-        ...baseHeaders,
-        ...options.headers
-      })
-
       const init: RequestInit = {
         method: options.method,
-        headers,
+        headers: new Headers(context.headers),
         body
       }
 
-      return requestFetch(url, init)
+      return requestFetch(context.url, init)
     }
 
     const initialResponse = await sendRequest()
@@ -245,22 +288,37 @@ export default class Fetchja {
     const responseHeaders = collectHeaders(response)
     const contentType = responseHeaders['content-type'] ?? ''
 
-    const payload = contentType.includes(JSON_API_MEDIA_TYPE)
+    let payload: Record<string, any> = contentType
+      .includes(JSON_API_MEDIA_TYPE)
       ? await response.json()
       : {}
 
+    for (const extension of this.extensions) {
+      payload = await extension.onResponse?.(payload, response, this) ??
+        payload
+    }
+
     if (!response.ok) {
-      throw new FetchjaError(response.statusText || 'Request failed', {
-        status: response.status,
-        statusText: response.statusText,
-        errors: payload.errors,
-        document: payload,
-        response
-      })
+      const error = new FetchjaError(
+        response.statusText || 'Request failed',
+        {
+          status: response.status,
+          statusText: response.statusText,
+          errors: payload.errors,
+          document: payload,
+          response
+        }
+      )
+
+      for (const extension of this.extensions) {
+        await extension.onError?.(error, this)
+      }
+
+      throw error
     }
 
     return {
-      ...deserialize(payload),
+      ...(options.raw === true ? payload : deserialize(payload)),
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders
@@ -360,3 +418,5 @@ export default class Fetchja {
     })
   }
 }
+
+export default Fetchja

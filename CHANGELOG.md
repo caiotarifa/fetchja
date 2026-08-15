@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.1.0 — 2026-08-14
+
+Fetchja can be extended now, and the first official extension speaks [Atomic Operations](https://jsonapi.org/ext/atomic/).
+
+### Changes
+
+- **Extensions.** The `extensions` option takes a list of extensions. An extension adds methods to the client and hooks into `onRequest`, `onResponse`, and `onError`. Names must be unique, and an extension that tries to overwrite a built-in method throws. `onResponseError` keeps its place and its behavior.
+- **`fetchja/atomic`.** `AtomicOperations` adds `api.atomic(op => [...])`: an ordered, all-or-nothing batch posted to `operations` (configurable), with `add`, `update`, `remove`, and `raw` builders, relationship targeting through a `ref`, `lid` links between operations, and positional `results`. Only that request carries the extension media type.
+- **`jsonApiMediaType`** builds `application/vnd.api+json` with its `ext` and `profile` parameters. The `Extension`, `ExtensionInput`, `MediaTypeParameters`, and `RequestContext` types are exported for third-party extensions.
+- **`Fetchja` is also a named export**, alongside the default one.
+- **`raw` request option** returns the response document as it came, without flattening it.
+- **Nested objects are only relationships when they say so.** An object — or a list of objects — is a relationship when it carries a `type`, `id`, or `lid`. Anything else is a plain JSON attribute and goes under `attributes` as it was given, so a JSON column (`metadata`, `settings`) finally survives. An object that carries a `type` and forgets its `id` still throws.
+- **A resource with a `lid` and no `id` is sideposted** the way JSON:API 1.1 describes: the linkage holds `{ type, lid }` and the full resource goes to the top-level `included`. Deduplication tracks `id` and `lid` apart.
+
+### Fixes
+
+- **`$.attributes` is merged per key** over the derived attributes, instead of replacing the whole object whenever a flat field was present, which silently dropped it.
+
 ## 3.0.0 — 2026-08-06
 
 Every member [JSON:API 1.1](https://jsonapi.org/format/1.1/) defines now survives a round trip.

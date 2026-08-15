@@ -57,23 +57,28 @@ function isRelationshipObject (
 }
 
 /**
- * Serialize a plain object into a JSON:API request document. Nested
- * objects with an identifier member become relationships, and the full
- * resources are collected into the top-level `included` array. A `$`
- * key holds the JSON:API members that have no place in the flat shape.
+ * Build a JSON:API resource object from a plain object. Nested objects
+ * with an identifier member become relationships, and the full
+ * resources are collected into a separate `included` list. A `$` key
+ * holds the JSON:API members that have no place in the flat shape.
+ *
+ * Returns the parts rather than a document, so a caller that places a
+ * resource somewhere other than a document's `data` — an extension
+ * embedding it in an operation, say — can do so without reparsing.
  *
  * @param type - The resource type of the root object.
  * @param input - The plain object to serialize.
  * @param options - The type-name transforms.
- * @param document - The top-level members to send with the resource.
- * @returns The JSON:API document as a JSON string.
+ * @returns The resource object and the resources it pulled along.
  */
-export function serialize (
+export function serializeResource (
   type: string,
   input: Record<string, unknown>,
-  options: SerializeOptions,
-  document?: JsonApiDocument
-): string {
+  options: SerializeOptions
+): {
+  data: Record<string, unknown>
+  included: Record<string, unknown>[]
+} {
   const included: Record<string, unknown>[] = []
   const includedKeys = new Set<string>()
 
@@ -330,7 +335,25 @@ export function serialize (
     return resource
   }
 
-  const data = extractResource(input, type)
+  return { data: extractResource(input, type), included }
+}
+
+/**
+ * Serialize a plain object into a JSON:API request document.
+ *
+ * @param type - The resource type of the root object.
+ * @param input - The plain object to serialize.
+ * @param options - The type-name transforms.
+ * @param document - The top-level members to send with the resource.
+ * @returns The JSON:API document as a JSON string.
+ */
+export function serialize (
+  type: string,
+  input: Record<string, unknown>,
+  options: SerializeOptions,
+  document?: JsonApiDocument
+): string {
+  const { data, included } = serializeResource(type, input, options)
 
   // `data` and `included` are Fetchja's to build, so they always win
   // over `document`. `JSON.stringify` drops the `undefined`, which is
