@@ -1,11 +1,8 @@
 export const NAV_LINKS = [
-  { href: '#why', label: 'why' },
   { href: '#install', label: 'install' },
   { href: '#quickstart', label: 'quick start' },
   { href: '#options', label: 'options' },
   { href: '#methods', label: 'methods' },
-  { href: '#metadata', label: 'meta & links' },
-  { href: '#query', label: 'query' },
   { href: '#extensions', label: 'extensions' },
   { href: '#typescript', label: 'typescript' }
 ] as const

@@ -3,7 +3,17 @@ import DocSection from '../common/DocSection.astro'
 import CodeBlock from '../ui/CodeBlock.astro'
 import InlineCode from '../ui/InlineCode.astro'
 import Tag from '../ui/Tag.astro'
-import { OPTIONS, OPTIONS_CODE } from '../../lib/content'
+import {
+  CUSTOM_FETCH_CODE,
+  CUSTOM_PLURAL_CODE,
+  NO_PLURAL_CODE,
+  OPTIONS,
+  OPTIONS_CODE
+} from '../../lib/content'
+
+const headingClass =
+  'mt-11 mb-3.5 flex items-center gap-3 text-[21px] font-semibold ' +
+  'tracking-normal text-text'
 
 const headClass =
   'whitespace-nowrap border-b border-border bg-bg-2 px-4 py-3.5 text-left ' +
@@ -86,5 +96,42 @@ const cellClass =
         </tbody>
       </table>
     </div>
+  </div>
+
+  <h3 id="custom-fetch" class:list={['scroll-mt-24', headingClass]}>
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Bring your own fetch
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    Provide any function with the standard <InlineCode>fetch</InlineCode>
+    signature. That keeps auth tokens, request tracing, timeouts, and tests in
+    the same place as the rest of your app.
+  </p>
+
+  <CodeBlock code={CUSTOM_FETCH_CODE} filename="custom-fetch.ts" />
+
+  <h3 id="plurals" class:list={['scroll-mt-24', headingClass]}>
+    <span class="font-mono text-lg font-medium text-accent/60">#</span>
+    Replace the pluralizer
+  </h3>
+  <p class="mb-5 max-w-[44em] text-text-mut">
+    Fetchja pluralizes resource names by default and avoids simple
+    double-plurals. For irregular words like <InlineCode>person</InlineCode> to
+    <InlineCode>people</InlineCode>, inject a library such as
+    <a
+      class="text-accent underline decoration-accent/40 underline-offset-4
+        transition hover:decoration-accent"
+      href="https://www.npmjs.com/package/pluralize"
+      target="_blank"
+      rel="noopener"
+    >
+      pluralize
+    </a>, or set <InlineCode>pluralize: false</InlineCode> and use exact
+    resource names.
+  </p>
+
+  <div class="grid gap-4 lg:grid-cols-2">
+    <CodeBlock code={CUSTOM_PLURAL_CODE} filename="custom-plural.ts" />
+    <CodeBlock code={NO_PLURAL_CODE} filename="no-plural.ts" />
   </div>
 </DocSection>
