@@ -1,6 +1,6 @@
 {
   "name": "fetchja-docs",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "type": "module",
   "scripts": {
     "generate:public": "node scripts/generate-public-assets.mjs",

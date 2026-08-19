@@ -28,9 +28,36 @@ test('keeps already-plural "us" words unchanged', () => {
   assert.equal(pluralize('statuses'), 'statuses')
 })
 
+test('adds -es to words ending in "ss"', () => {
+  assert.equal(pluralize('address'), 'addresses')
+  assert.equal(pluralize('class'), 'classes')
+  assert.equal(pluralize('addresses'), 'addresses')
+})
+
 test('handles consonant + y', () => {
   assert.equal(pluralize('category'), 'categories')
   assert.equal(pluralize('day'), 'days')
+})
+
+test('handles common irregulars', () => {
+  assert.equal(pluralize('person'), 'people')
+  assert.equal(pluralize('child'), 'children')
+  assert.equal(pluralize('people'), 'people')
+  assert.equal(pluralize('children'), 'children')
+})
+
+test('swaps "is" for "es"', () => {
+  assert.equal(pluralize('analysis'), 'analyses')
+  assert.equal(pluralize('diagnosis'), 'diagnoses')
+  assert.equal(pluralize('analyses'), 'analyses')
+})
+
+test('keeps uncountables unchanged', () => {
+  assert.equal(pluralize('equipment'), 'equipment')
+  assert.equal(pluralize('information'), 'information')
+  assert.equal(pluralize('media'), 'media')
+  assert.equal(pluralize('cash'), 'cash')
+  assert.equal(pluralize('staff'), 'staff')
 })
 
 test('returns empty string unchanged', () => {

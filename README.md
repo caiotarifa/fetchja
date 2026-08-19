@@ -578,9 +578,9 @@ interface Article {
 
 ## Plurals
 
-By default, Fetchja makes resource names plural with a small built-in helper. It knows the common English rules (and `status` becomes `statuses`, not `statu`). It is also safe to run twice: `articles` stays `articles`.
+By default, Fetchja makes resource names plural with a small built-in helper. It knows the common English rules (`status` becomes `statuses`, `address` becomes `addresses`), common irregulars (`person` becomes `people`), and uncountables (`equipment` stays `equipment`). It is also safe to run twice: `articles` stays `articles`.
 
-For tricky words (like `person` → `people`), pass a bigger library such as [`pluralize`](https://www.npmjs.com/package/pluralize):
+For anything fancier, pass a bigger library such as [`pluralize`](https://www.npmjs.com/package/pluralize):
 
 ```js
 import pluralize from 'pluralize'

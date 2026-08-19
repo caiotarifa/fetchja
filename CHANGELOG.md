@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.2.0 — 2026-08-19
+
+The built-in pluralizer got a lot smarter.
+
+### Changes
+
+- **Irregular plurals are built in.** `person` becomes `people`, and so do `child`, `man`, `woman`, `foot`, `tooth`, `mouse`, and `goose`. Their plural forms stay unchanged.
+- **`is` endings swap for `es`.** `analysis` becomes `analyses` instead of being mistaken for a plural.
+- **Uncountables stay as they are.** `cash`, `data`, `equipment`, `feedback`, `fish`, `information`, `media`, `sheep`, and `staff` pass through unchanged.
+
+### Fixes
+
+- **Words ending in `ss` are pluralized.** `address` becomes `addresses` and `class` becomes `classes`, instead of being treated as already plural.
+
 ## 3.1.0 — 2026-08-14
 
 Fetchja can be extended now, and the first official extension speaks [Atomic Operations](https://jsonapi.org/ext/atomic/).
